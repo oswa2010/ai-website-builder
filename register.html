@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-stone-950">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro Seguro - RestoPro Ultra</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .strength-bar { height: 4px; transition: all 0.3s ease; }
+    .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
+  </style>
+</head>
+<body class="h-full font-sans antialiased text-white selection:bg-red-600/30"
+      x-data="{
+        step: 1, 
+        generatedCode: '',
+        userCode: '',
+        timer: 60,
+        timerActive: false,
+        showPass: false,
+        showCode: false,
+        acceptTerms: false,
+        form: { cedula: '', nombre: '', apellidos: '', telefono: '', email: '', password: '' },
+        
+        get passwordStrength() {
+            let p = this.form.password;
+            if (!p) return { w: '0%', c: 'bg-transparent', t: '' };
+            if (p.length < 6) return { w: '33%', c: 'bg-red-500', t: 'Débil' };
+            if (p.length < 10 || !/[0-9]/.test(p)) return { w: '66%', c: 'bg-amber-500', t: 'Media' };
+            return { w: '100%', c: 'bg-emerald-500', t: 'Fuerte' };
+        },
+
+        startTimer() {
+            this.timer = 60;
+            this.timerActive = true;
+            let interval = setInterval(() => {
+                if (this.timer > 0) this.timer--;
+                else { this.timerActive = false; clearInterval(interval); }
+            }, 1000);
+        },
+
+        generateAndSend() {
+            if(!this.form.email || !this.form.nombre || !this.form.cedula) return alert('Por favor, complete todos los campos.');
+            this.generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+            alert('SISTEMA RESTOPRO:\nSu código de seguridad es: ' + this.generatedCode);
+            this.step = 2;
+            this.startTimer();
+        },
+        
+        verifyAndFinish() {
+            if(this.userCode === this.generatedCode) {
+                let customers = JSON.parse(localStorage.getItem('restopro_reservations') || '[]');
+                const newUser = { 
+                    ...this.form, 
+                    status: 'Verificado', 
+                    id: Date.now(),
+                    order: 'Nuevo Miembro'
+                };
+                customers.push(newUser);
+                localStorage.setItem('restopro_reservations', JSON.stringify(customers));
+                localStorage.setItem('restopro_current_user', JSON.stringify(newUser));
+                
+                alert('¡IDENTIDAD VERIFICADA!\nBienvenido a RestoPro.');
+                window.location.href = '/user-panel.html';
+            } else {
+                alert('Código incorrecto. Revise su código de seguridad.');
+            }
+        }
+      }">
+  
+  <div class="min-h-full flex flex-col justify-center py-12 px-6 lg:px-8 relative overflow-hidden">
+    <!-- Efecto de iluminación -->
+    <div class="absolute top-0 right-0 h-[600px] w-[600px] bg-red-600/10 rounded-full blur-[120px] -z-10 translate-x-1/2 -translate-y-1/2"></div>
+    
+    <div class="sm:mx-auto sm:w-full sm:max-w-md text-center mb-10">
+        <div class="flex justify-center mb-6">
+            <div class="bg-red-600 p-4 rounded-[2rem] shadow-2xl shadow-red-600/30">
+                <svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            </div>
+        </div>
+        <h2 class="text-5xl font-black tracking-tighter uppercase italic">Resto<span class="text-red-600">Pro</span></h2>
+        <p class="mt-2 text-stone-500 font-bold uppercase tracking-[0.3em] text-[10px]">Security Authentication System</p>
+    </div>
+
+    <!-- PASO 1: REGISTRO -->
+    <div x-show="step === 1" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 translate-y-8" class="sm:mx-auto sm:w-full sm:max-w-lg">
+      <div class="glass-card py-12 px-10 shadow-2xl rounded-[3.5rem]">
+        <form class="space-y-6" @submit.prevent="generateAndSend()">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="text-[9px] font-black uppercase tracking-widest text-stone-500 mb-2 block">Número de Cédula</label>
+              <input type="text" x-model="form.cedula" required class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold focus:border-red-600 outline-none transition">
+            </div>
+            <div>
+              <label class="text-[9px] font-black uppercase tracking-widest text-stone-500 mb-2 block">Nombre</label>
+              <input type="text" x-model="form.nombre" required class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold focus:border-red-600 outline-none transition">
+            </div>
+          </div>
+
+          <div>
+            <label class="text-[9px] font-black uppercase tracking-widest text-stone-500 mb-2 block">Apellidos</label>
+            <input type="text" x-model="form.apellidos" required class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold focus:border-red-600 outline-none transition">
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="text-[9px] font-black uppercase tracking-widest text-stone-500 mb-2 block">Teléfono</label>
+              <input type="tel" x-model="form.telefono" required class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold focus:border-red-600 outline-none transition">
+            </div>
+            <div>
+              <label class="text-[9px] font-black uppercase tracking-widest text-stone-500 mb-2 block">Email</label>
+              <input type="email" x-model="form.email" required class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold focus:border-red-600 outline-none transition">
+            </div>
+          </div>
+
+          <div class="relative">
+            <label class="text-[9px] font-black uppercase tracking-widest text-stone-500 mb-2 block">Contraseña</label>
+            <input :type="showPass ? 'text' : 'password'" x-model="form.password" required 
+                   class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold focus:border-red-600 outline-none transition">
+            <button type="button" @click="showPass = !showPass" class="absolute right-4 top-10 text-stone-500 hover:text-white transition">
+                <svg x-show="!showPass" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <svg x-show="showPass" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+            </button>
+            <div class="mt-4 px-1">
+                <div class="w-full bg-white/5 rounded-full overflow-hidden mb-2">
+                    <div class="strength-bar" :class="passwordStrength.c" :style="`width: ${passwordStrength.w}`"></div>
+                </div>
+                <p class="text-[8px] font-black uppercase tracking-widest text-stone-500" x-text="passwordStrength.t ? `Seguridad: ${passwordStrength.t}` : 'Ingresa tu clave'"></p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 pt-4">
+            <input type="checkbox" x-model="acceptTerms" class="h-5 w-5 rounded-lg border-white/10 bg-white/5 text-red-600 focus:ring-red-600 transition-all cursor-pointer">
+            <p class="text-[9px] font-bold text-stone-500 uppercase tracking-widest leading-relaxed">Acepto los <a href="#" class="text-white underline decoration-red-600/50">Términos de Servicio</a></p>
+          </div>
+          
+          <button type="submit" 
+                  :disabled="!acceptTerms"
+                  :class="!acceptTerms ? 'opacity-30 cursor-not-allowed grayscale' : 'shadow-red-600/30 hover:bg-red-700 hover:scale-[1.02]'"
+                  class="w-full bg-red-600 text-white py-6 rounded-[2.5rem] font-black text-xs uppercase tracking-[0.4em] shadow-2xl transition-all">
+            Solicitar Código
+          </button>
+        </form>
+
+        <!-- Botón Acceder para usuarios con cuenta -->
+        <div class="mt-10 text-center border-t border-white/5 pt-10">
+            <p class="text-[9px] font-bold text-stone-500 uppercase tracking-widest mb-4">¿Ya tienes cuenta?</p>
+            <a href="/login.html" class="inline-block w-full py-4 bg-white/5 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] text-white hover:bg-white/10 hover:text-red-600 transition-all">
+                INICIA SESIÓN
+            </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 2: VERIFICACIÓN -->
+    <div x-show="step === 2" x-cloak x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 scale-95" class="sm:mx-auto sm:w-full sm:max-w-md">
+      <div class="text-center mb-10">
+        <h2 class="text-4xl font-black tracking-tighter uppercase italic">Verifica <span class="text-emerald-500">Email</span></h2>
+        <p class="text-stone-500 text-[10px] font-bold uppercase tracking-widest mt-2" x-text="`Enviado a ${form.email}`"></p>
+      </div>
+
+      <div class="glass-card py-12 px-10 shadow-2xl rounded-[3.5rem]">
+        <div class="space-y-8">
+            <div class="relative">
+                <input :type="showCode ? 'text' : 'password'" x-model="userCode" maxlength="6" placeholder="000000"
+                       class="w-full bg-white/5 border-2 border-white/10 rounded-[2.5rem] p-8 text-center text-5xl font-black tracking-[0.4em] text-white focus:border-emerald-500 outline-none transition shadow-inner">
+                <button @click="showCode = !showCode" class="absolute right-6 bottom-10 text-stone-600 hover:text-emerald-500 transition">
+                    <svg x-show="!showCode" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    <svg x-show="showCode" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+                </button>
+            </div>
+
+            <button @click="verifyAndFinish()" class="w-full bg-emerald-600 text-white py-6 rounded-[2.5rem] font-black text-xs uppercase tracking-[0.4em] shadow-2xl shadow-emerald-600/30 hover:bg-emerald-700 transition-all">Verificar Ahora</button>
+            
+            <div class="text-center">
+                <p class="text-[9px] font-bold text-stone-500 uppercase tracking-widest">
+                    <span x-show="timerActive">Reenviar código en <span x-text="timer" class="text-white"></span>s</span>
+                    <button x-show="!timerActive" @click="generateAndSend()" class="text-emerald-500 font-black hover:underline transition-all">Reenviar Código Ahora</button>
+                </p>
+                <button @click="step = 1" class="mt-8 text-[9px] font-black uppercase tracking-widest text-stone-600 hover:text-white transition">← Corregir Datos de Registro</button>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

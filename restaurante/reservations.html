@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-stone-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reservas y Clientes Pro - RestoPro</title>
+  <link rel="stylesheet" href="../src/main.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .custom-scroll::-webkit-scrollbar { width: 4px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #e7e5e4; border-radius: 10px; }
+  </style>
+</head>
+<body class="h-full font-sans antialiased text-stone-900" 
+      x-data="{ 
+    sidebarOpen: false, 
+    modalOpen: false,
+    activeCategory: 'Comida',
+    searchQuery: '',
+    
+    // Base de Datos Local
+    reservations: [],
+    
+    // Función para obtener reservas filtradas por Cédula
+    get filteredReservations() {
+        if (this.searchQuery.trim() === '') return this.reservations;
+        return this.reservations.filter(res => 
+            res.cedula.toLowerCase().includes(this.searchQuery.toLowerCase())
+        );
+    },
+
+    newRes: { 
+        cedula: '', nombre: '', apellidos: '', telefono: '', email: '', 
+        pax: 2, time: '14:00', table: 'M-01', items: [] 
+    },
+
+    menuItems: [
+        { id: 1, name: 'Ensalada Zen', price: 12.50, cat: 'Comida', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop' },
+        { id: 2, name: 'Pizza Napolitana', price: 14.00, cat: 'Comida', img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=200&h=200&fit=crop' },
+        { id: 10, name: 'Cerveza Artesanal', price: 5.50, cat: 'Bebidas', img: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=200&h=200&fit=crop' },
+        { id: 20, name: 'Tarta de Queso', price: 7.50, cat: 'Postres', img: 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=200&h=200&fit=crop' }
+    ],
+
+    init() {
+        const saved = localStorage.getItem('restopro_reservations');
+        if (saved) {
+            this.reservations = JSON.parse(saved).map((res, index) => ({
+                id: res.id || Date.now() + index,
+                cedula: res.cedula || `WEB-${1000 + index}`,
+                nombre: res.nombre || '',
+                apellidos: res.apellidos || '',
+                telefono: res.telefono || '',
+                email: res.email || '',
+                pax: res.pax || 2,
+                time: res.time || '14:00',
+                table: res.table || 'Pendiente',
+                status: res.status || 'Confirmada',
+                order: res.order || 'Solo mesa',
+                orderNumber: res.orderNumber || '',
+                reservationDate: res.reservationDate || '',
+                source: res.source || 'panel'
+            }));
+            this.saveToLocal();
+        } else {
+            this.reservations = [
+                { id: 1, cedula: '12345678', nombre: 'Carlos', apellidos: 'Rodríguez', telefono: '555-0192', email: 'carlos@mail.com', pax: 4, time: '14:00', table: 'M-04', status: 'Confirmada', order: '2x Pizza, 2x Cerveza', reservationDate: '', source: 'panel' }
+            ];
+            this.saveToLocal();
+        }
+    },
+
+    saveToLocal() {
+        localStorage.setItem('restopro_reservations', JSON.stringify(this.reservations));
+    },
+
+    toggleItem(name) {
+        let existing = this.newRes.items.find(i => i.name === name);
+        if (existing) {
+            this.newRes.items = this.newRes.items.filter(i => i.name !== name);
+        } else {
+            this.newRes.items.push({ name: name, qty: 1 });
+        }
+    },
+
+    addReservation() {
+        if (!this.newRes.cedula || !this.newRes.nombre) {
+            alert('Por favor ingresa Cédula y Nombre.');
+            return;
+        }
+        let orderSummary = this.newRes.items.length > 0 
+            ? this.newRes.items.map(i => `${i.qty}x ${i.name}`).join(', ') 
+            : 'Solo mesa';
+
+        this.reservations.unshift({
+            ...this.newRes,
+            status: 'Confirmada',
+            order: orderSummary,
+            reservationDate: '',
+            source: 'panel',
+            id: Date.now() // ID único para el borrado preciso
+        });
+
+        this.saveToLocal();
+        this.modalOpen = false;
+        this.newRes = { cedula: '', nombre: '', apellidos: '', telefono: '', email: '', pax: 2, time: '14:00', table: 'M-01', items: [] };
+    },
+
+    deleteReservation(id) {
+        if(confirm('¿Eliminar registro?')) {
+            this.reservations = this.reservations.filter(r => r.id !== id);
+            this.saveToLocal();
+        }
+    }
+}">
+  
+  <div class="flex h-full">
+    <!-- Sidebar -->
+    <aside class="hidden lg:flex lg:flex-shrink-0 lg:w-72 lg:flex-col border-r border-stone-200 bg-white">
+      <div class="flex flex-col flex-1 pt-5 pb-4 px-4">
+        <div class="flex items-center px-2 mb-8">
+          <div class="bg-red-600 p-2 rounded-xl text-white font-black shadow-lg">R</div>
+          <span class="ml-3 text-xl font-black text-stone-900 tracking-tighter uppercase">Resto<span class="text-red-600">Pro</span></span>
+        </div>
+        <nav class="space-y-1">
+          <a href="dashboard.html" class="flex items-center px-4 py-3 text-sm font-bold text-stone-400 hover:bg-stone-50 rounded-xl transition">Dashboard</a>
+          <a href="reservations.html" class="flex items-center px-4 py-3 text-sm font-bold text-red-600 bg-red-50 rounded-xl">Reservas</a>
+          <a href="../menu-management.html" class="flex items-center px-4 py-3 text-sm font-bold text-stone-400 hover:bg-stone-50 rounded-xl transition">La Carta</a>
+        </nav>
+        <div class="pt-4 mt-auto border-t border-stone-100">
+          <a href="index.html" class="flex items-center px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 rounded-xl transition group">
+            <svg class="mr-3 h-5 w-5 text-red-400 group-hover:text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Ver Sitio Público
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col min-w-0 bg-stone-50">
+      <!-- Header con Buscador -->
+      <header class="bg-white border-b border-stone-200 px-8 py-5 flex flex-wrap gap-4 justify-between items-center shadow-sm">
+        <div class="flex items-center gap-8">
+            <h1 class="text-xl font-black text-stone-900 uppercase italic">Gestión de Clientes</h1>
+            
+            <!-- Buscador por Cédula -->
+            <div class="relative group">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <svg class="h-4 w-4 text-stone-400 group-focus-within:text-red-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <input type="text" x-model="searchQuery" placeholder="Buscar por Cédula..." 
+                       class="bg-stone-50 border-stone-100 border rounded-full py-2.5 pl-11 pr-8 text-xs font-bold text-stone-900 focus:ring-2 focus:ring-red-600 focus:bg-white transition-all w-64 outline-none">
+                <button x-show="searchQuery" @click="searchQuery = ''" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                    <svg class="h-3 w-3 text-stone-400 hover:text-red-600" fill="currentColor" viewBox="0 0 20 20"><path d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <button @click="modalOpen = true" class="bg-red-600 text-white px-8 py-3 rounded-full font-black text-xs uppercase shadow-xl shadow-red-200 hover:scale-105 transition-all tracking-widest">
+          + Nuevo Registro
+        </button>
+      </header>
+
+      <main class="p-8">
+        <div class="bg-white rounded-[2.5rem] shadow-sm border border-stone-200 overflow-hidden">
+          <table class="min-w-full divide-y divide-stone-100">
+            <thead class="bg-stone-50">
+              <tr>
+                <th class="px-8 py-5 text-left text-[10px] font-black text-stone-400 uppercase tracking-widest">Cédula / Cliente</th>
+                <th class="px-8 py-5 text-left text-[10px] font-black text-stone-400 uppercase tracking-widest">Contacto</th>
+                <th class="px-8 py-5 text-left text-[10px] font-black text-stone-400 uppercase tracking-widest">Mesa / Pedido</th>
+                <th class="px-8 py-5 text-left text-[10px] font-black text-stone-400 uppercase tracking-widest">Reserva</th>
+                <th class="px-8 py-5 text-right text-[10px] font-black text-stone-400 uppercase tracking-widest">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-100">
+              <template x-for="res in filteredReservations" :key="res.id || res.cedula">
+                <tr class="hover:bg-stone-50/50 transition">
+                  <td class="px-8 py-6">
+                    <p class="text-[10px] font-black text-red-600 mb-1" x-text="res.cedula"></p>
+                    <p class="text-sm font-black text-stone-900 uppercase" x-text="`${res.nombre} ${res.apellidos}`"></p>
+                  </td>
+                  <td class="px-8 py-6">
+                    <p class="text-xs font-bold text-stone-600" x-text="res.telefono"></p>
+                    <p class="text-[10px] font-medium text-stone-400" x-text="res.email"></p>
+                  </td>
+                  <td class="px-8 py-6">
+                    <div class="flex items-center gap-3">
+                        <span class="text-[10px] font-black bg-stone-900 text-white px-2 py-1 rounded" x-text="res.table"></span>
+                        <div>
+                          <p class="text-xs font-bold text-stone-500 italic truncate max-w-[200px]" x-text="res.order"></p>
+                          <p class="text-[10px] font-black uppercase tracking-widest text-red-600" x-show="res.orderNumber" x-text="res.orderNumber"></p>
+                        </div>
+                    </div>
+                  </td>
+                  <td class="px-8 py-6">
+                    <p class="text-xs font-bold text-stone-700" x-text="res.reservationDate || 'Sin fecha'"></p>
+                    <p class="text-[10px] font-black uppercase tracking-widest" :class="res.source === 'web' ? 'text-emerald-600' : 'text-stone-400'" x-text="res.source === 'web' ? 'Web' : 'Panel'"></p>
+                  </td>
+                  <td class="px-8 py-6 text-right">
+                    <button @click="deleteReservation(res.id)" class="text-[10px] font-black uppercase text-red-300 hover:text-red-600 transition">Eliminar</button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+          
+          <!-- Estado vacío para búsquedas sin resultados -->
+          <div x-show="filteredReservations.length === 0" class="p-20 text-center">
+            <svg class="h-12 w-12 text-stone-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <p class="text-stone-400 font-bold uppercase tracking-widest text-xs" x-text="searchQuery ? 'No se encontraron clientes con esa cédula' : 'No hay registros en la base de datos'"></p>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal (Sin cambios significativos, se mantiene igual para el registro) -->
+  <div x-show="modalOpen" class="fixed inset-0 z-50 overflow-hidden" x-cloak>
+    <div class="flex items-center justify-center min-h-full p-4">
+      <div class="fixed inset-0 bg-stone-950/90 backdrop-blur-xl transition-opacity" @click="modalOpen = false"></div>
+      <div class="relative bg-white rounded-[3.5rem] shadow-2xl w-full max-w-6xl flex flex-col md:flex-row h-[90vh] overflow-hidden border border-white/20">
+        <!-- Contenido del modal igual al anterior -->
+        <div class="p-14 w-full md:w-2/5 border-r border-stone-100 overflow-y-auto custom-scroll">
+          <h3 class="text-3xl font-black text-stone-900 mb-2 uppercase tracking-tighter italic">Ficha de Cliente</h3>
+          <p class="text-xs font-bold text-stone-400 uppercase tracking-widest mb-10">Información para la base de datos</p>
+          <div class="space-y-6">
+            <div>
+              <label class="text-[10px] font-black uppercase text-stone-400 mb-2 block">Número de Cédula</label>
+              <input type="text" x-model="newRes.cedula" class="w-full bg-stone-50 border-stone-100 border rounded-2xl p-4 font-black text-stone-900 outline-none focus:border-red-600 transition">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <input type="text" x-model="newRes.nombre" placeholder="Nombre" class="bg-stone-50 border-none rounded-2xl p-4 font-bold">
+              <input type="text" x-model="newRes.apellidos" placeholder="Apellidos" class="bg-stone-50 border-none rounded-2xl p-4 font-bold">
+            </div>
+            <input type="tel" x-model="newRes.telefono" placeholder="Teléfono" class="w-full bg-stone-50 border-none rounded-2xl p-4 font-bold">
+            <input type="email" x-model="newRes.email" placeholder="Email" class="w-full bg-stone-50 border-none rounded-2xl p-4 font-bold">
+            <div class="grid grid-cols-2 gap-4 pt-4">
+                <input type="number" x-model="newRes.pax" class="bg-stone-50 border-none rounded-xl p-3 font-bold text-sm">
+                <input type="time" x-model="newRes.time" class="bg-stone-50 border-none rounded-xl p-3 font-bold text-sm">
+            </div>
+          </div>
+        </div>
+        <div class="p-14 w-full md:w-3/5 bg-stone-50 flex flex-col">
+          <div class="flex-1 overflow-y-auto grid grid-cols-2 gap-4 custom-scroll">
+            <template x-for="item in menuItems.filter(i => i.cat === activeCategory)" :key="item.id">
+              <div @click="toggleItem(item.name)" :class="newRes.items.find(i => i.name === item.name) ? 'ring-4 ring-red-600 bg-white' : 'bg-white'" class="relative rounded-[2rem] border p-4 cursor-pointer shadow-sm group">
+                <img :src="item.img" class="h-28 w-full object-cover rounded-xl mb-4">
+                <p class="font-black text-[10px] uppercase" x-text="item.name"></p>
+              </div>
+            </template>
+          </div>
+          <div class="mt-10 pt-8 flex gap-4">
+            <button @click="modalOpen = false" class="flex-1 bg-white text-stone-500 py-5 rounded-[2rem] font-black text-xs uppercase border">Regresar</button>
+            <button @click="addReservation()" class="flex-[2] bg-stone-900 text-white py-5 rounded-[2rem] font-black text-xs uppercase hover:bg-red-600 transition-all">Confirmar y Guardar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

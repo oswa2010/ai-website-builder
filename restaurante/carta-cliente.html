@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RestoPro | Carta del cliente</title>
+  <meta name="description" content="Explora la carta del cliente de RestoPro, arma tu pedido por mesa y envía la comanda directamente a cocina.">
+  <meta property="og:url" content="http://localhost:5173/carta-cliente.html">
+  <meta property="og:title" content="RestoPro | Carta del cliente">
+  <meta property="og:description" content="Comida, bebidas y postres con pedido directo por mesa y envío automático a cocina.">
+  <meta property="og:image" content="/images/desserts/tiramisu-copa.jpg">
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../src/main.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-stone-950 text-white antialiased" x-data="{
+  activeCategory: 'Comida',
+  tableNumber: 'M-01',
+  orderSent: false,
+  customItem: { name: '', price: '', cat: 'Comida' },
+  cart: [],
+  menuItems: [
+    { id: 1, name: 'Lomo Saltado Premium', price: 35.00, cat: 'Comida', desc: 'Lomo salteado con cebolla morada, tomate y papas doradas.' },
+    { id: 2, name: 'Ceviche Pro Especial', price: 42.00, cat: 'Comida', desc: 'Pesca fresca, leche de tigre cítrica y camote glaseado.' },
+    { id: 3, name: 'Pizza Napolitana', price: 18.00, cat: 'Comida', desc: 'Masa artesanal, salsa intensa y mozzarella fundida.' },
+    { id: 4, name: 'Burger La Jefa', price: 16.50, cat: 'Comida', desc: 'Carne jugosa, queso cheddar y salsa de la casa.' },
+    { id: 5, name: 'Pasta Carbonara', price: 22.00, cat: 'Comida', desc: 'Pasta al dente con panceta crocante y parmesano.' },
+    { id: 6, name: 'Pisco Sour Clásico', price: 25.00, cat: 'Bebidas', desc: 'Coctel emblema con pisco, limón y espuma suave.' },
+    { id: 7, name: 'Cerveza Artesana', price: 12.00, cat: 'Bebidas', desc: 'Rubia local servida bien fría.' },
+    { id: 8, name: 'Vino Tinto Copa', price: 15.00, cat: 'Bebidas', desc: 'Copa de vino tinto reserva de cuerpo medio.' },
+    { id: 9, name: 'Jugo de Naranja', price: 8.00, cat: 'Bebidas', desc: 'Jugo natural recién exprimido.' },
+    { id: 10, name: 'Agua Mineral Premium', price: 5.00, cat: 'Bebidas', desc: 'Agua con gas de servicio individual.' },
+    { id: 11, name: 'Tarta de Queso', price: 15.00, cat: 'Postres', desc: 'Textura cremosa con base crujiente.' },
+    { id: 12, name: 'Suspiro Limeño Pro', price: 14.00, cat: 'Postres', desc: 'Dulce clásico con merengue ligero.' },
+    { id: 13, name: 'Tiramisú Clásico', price: 16.00, cat: 'Postres', desc: 'Capas de café, cacao y crema italiana.' },
+    { id: 14, name: 'Brownie Supremo', price: 18.00, cat: 'Postres', desc: 'Brownie tibio con centro húmedo.' },
+    { id: 15, name: 'Bowl de Frutas', price: 12.00, cat: 'Postres', desc: 'Frutas frescas de temporada con menta.' }
+  ],
+
+  get filteredItems() {
+    return this.menuItems.filter(item => item.cat === this.activeCategory);
+  },
+
+  addToCart(item) {
+    const existing = this.cart.find(cartItem => cartItem.id === item.id);
+    if (existing) {
+      existing.qty += 1;
+    } else {
+      this.cart.push({ ...item, qty: 1 });
+    }
+  },
+
+  updateQty(itemId, delta) {
+    const existing = this.cart.find(item => item.id === itemId);
+    if (!existing) return;
+    existing.qty += delta;
+    if (existing.qty <= 0) {
+      this.cart = this.cart.filter(item => item.id !== itemId);
+    }
+  },
+
+  addCustomItem() {
+    if (!this.customItem.name.trim() || !this.customItem.price) {
+      alert('Escribe nombre y precio para añadir el producto manual.');
+      return;
+    }
+    const item = {
+      id: Date.now(),
+      name: this.customItem.name.trim(),
+      price: Number(this.customItem.price),
+      cat: this.customItem.cat,
+      desc: 'Añadido manualmente por el cliente.'
+    };
+    this.menuItems.push(item);
+    this.addToCart(item);
+    this.customItem = { name: '', price: '', cat: this.activeCategory };
+    this.activeCategory = item.cat;
+  },
+
+  get subtotal() {
+    return this.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  },
+
+  get tax() {
+    return this.subtotal * 0.18;
+  },
+
+  get total() {
+    return this.subtotal + this.tax;
+  },
+
+  sendOrder() {
+    if (!this.tableNumber.trim()) {
+      alert('Ingresa el número de mesa.');
+      return;
+    }
+    if (this.cart.length === 0) {
+      alert('Selecciona al menos un producto antes de hacer el pedido.');
+      return;
+    }
+
+    const orderNumber = 'PED-' + Math.floor(1000 + Math.random() * 9000);
+    const kitchenOrders = JSON.parse(localStorage.getItem('restopro_kitchen_orders') || '[]');
+    const orderPayload = {
+      id: orderNumber,
+      table: this.tableNumber.trim().toUpperCase(),
+      type: 'Cliente',
+      customer: 'Pedido desde carta cliente',
+      orderNumber,
+      items: this.cart.map(item => ({ n: item.name, q: item.qty, c: item.cat })),
+      start: Date.now(),
+      status: 'new'
+    };
+
+    const existingKitchenIndex = kitchenOrders.findIndex(order => order.table === orderPayload.table);
+    if (existingKitchenIndex >= 0) {
+      kitchenOrders[existingKitchenIndex] = orderPayload;
+    } else {
+      kitchenOrders.unshift(orderPayload);
+    }
+    localStorage.setItem('restopro_kitchen_orders', JSON.stringify(kitchenOrders));
+
+    const reservations = JSON.parse(localStorage.getItem('restopro_reservations') || '[]');
+    const reservationPayload = {
+      id: Date.now(),
+      cedula: `CLIENTE-${Date.now().toString().slice(-6)}`,
+      nombre: 'Cliente',
+      apellidos: 'Mesa',
+      telefono: '',
+      email: '',
+      pax: 1,
+      time: '14:00',
+      table: this.tableNumber.trim().toUpperCase(),
+      status: 'Confirmada',
+      serviceStatus: 'Atendiendo',
+      order: this.cart.map(item => `${item.qty}x ${item.name}`).join(', '),
+      orderItems: this.cart.map(item => ({ id: item.id, name: item.name, qty: item.qty, price: item.price })),
+      orderNumber,
+      reservationDate: new Date().toLocaleDateString('es-ES'),
+      source: 'cliente'
+    };
+
+    const existingReservationIndex = reservations.findIndex(res => res.table === reservationPayload.table);
+    if (existingReservationIndex >= 0) {
+      reservations[existingReservationIndex] = { ...reservations[existingReservationIndex], ...reservationPayload };
+    } else {
+      reservations.unshift(reservationPayload);
+    }
+    localStorage.setItem('restopro_reservations', JSON.stringify(reservations));
+
+    this.cart = [];
+    this.orderSent = true;
+    setTimeout(() => { this.orderSent = false; }, 4000);
+  }
+}">
+  <div class="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(220,38,38,0.14),_transparent_30%),linear-gradient(180deg,_#1c1917_0%,_#0c0a09_25%,_#fafaf9_25%,_#fafaf9_100%)]">
+    <header class="border-b border-white/10 bg-stone-950/90 backdrop-blur-xl">
+      <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
+        <a href="index.html" class="flex items-center gap-3">
+          <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-red-600 text-lg font-black text-white">R</div>
+          <div>
+            <p class="text-lg font-black uppercase tracking-[0.2em] text-white">RestoPro</p>
+            <p class="text-xs uppercase tracking-[0.35em] text-stone-400">Carta del cliente</p>
+          </div>
+        </a>
+        <a href="kitchen.html" class="rounded-md border border-white/15 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/5">Ver cocina</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="px-4 pb-16 pt-14 sm:px-6 lg:px-8">
+        <div class="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
+          <div>
+            <span class="inline-flex rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-red-200">Pedido directo por mesa</span>
+            <h1 class="mt-6 text-4xl font-black leading-tight text-white sm:text-5xl lg:text-6xl">Carta elegante para cliente con pedido instantáneo a cocina.</h1>
+            <p class="mt-5 max-w-3xl text-base leading-relaxed text-stone-300 md:text-lg">Explora 15 opciones entre comida, bebidas y postres, añade productos manuales y envía tu comanda con el número de mesa.</p>
+
+            <div class="mt-8 rounded-[2rem] border border-white/10 bg-white/5 p-5">
+              <label class="block">
+                <span class="text-sm font-semibold text-stone-200">Número de mesa</span>
+                <input type="text" x-model="tableNumber" placeholder="Ej. M-02" class="mt-2 w-full rounded-md border border-white/10 bg-stone-900 px-4 py-3 text-white outline-none transition focus:border-red-500">
+              </label>
+            </div>
+
+            <div class="mt-8 flex flex-wrap gap-3">
+              <template x-for="cat in ['Comida', 'Bebidas', 'Postres']" :key="cat">
+                <button type="button" @click="activeCategory = cat" :class="activeCategory === cat ? 'bg-red-600 text-white' : 'bg-white text-stone-700'" class="rounded-full px-5 py-3 text-sm font-black uppercase tracking-[0.2em] transition">
+                  <span x-text="cat"></span>
+                </button>
+              </template>
+            </div>
+
+            <div class="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+              <template x-for="item in filteredItems" :key="item.id">
+                <article class="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+                  <div class="flex items-start justify-between gap-4">
+                    <div>
+                      <p class="text-[10px] font-black uppercase tracking-[0.25em] text-red-600" x-text="item.cat"></p>
+                      <h2 class="mt-2 text-2xl font-black text-slate-900" x-text="item.name"></h2>
+                    </div>
+                    <span class="rounded-full bg-red-50 px-3 py-2 text-sm font-black text-red-600" x-text="`$ ${item.price.toFixed(2)}`"></span>
+                  </div>
+                  <p class="mt-4 text-sm leading-relaxed text-slate-700" x-text="item.desc"></p>
+                  <button type="button" @click="addToCart(item)" class="mt-6 w-full rounded-md bg-stone-950 px-5 py-3 text-sm font-black uppercase tracking-[0.2em] text-white transition hover:bg-red-600">Añadir al pedido</button>
+                </article>
+              </template>
+            </div>
+
+            <section class="mt-10 rounded-[2rem] border border-stone-200 bg-white p-6 shadow-sm">
+              <div class="flex items-center justify-between gap-4">
+                <div>
+                  <p class="text-[10px] font-black uppercase tracking-[0.25em] text-red-600">Añadir manualmente</p>
+                  <h2 class="mt-2 text-2xl font-black text-slate-900">Producto personalizado</h2>
+                </div>
+              </div>
+              <div class="mt-6 grid gap-4 md:grid-cols-3">
+                <input type="text" x-model="customItem.name" placeholder="Nombre del producto" class="rounded-md border border-stone-200 bg-slate-50 px-4 py-3 font-bold text-slate-900 outline-none focus:border-red-500">
+                <input type="number" step="0.01" x-model="customItem.price" placeholder="Precio" class="rounded-md border border-stone-200 bg-slate-50 px-4 py-3 font-bold text-slate-900 outline-none focus:border-red-500">
+                <select x-model="customItem.cat" class="rounded-md border border-stone-200 bg-slate-50 px-4 py-3 font-bold text-slate-900 outline-none focus:border-red-500">
+                  <option>Comida</option>
+                  <option>Bebidas</option>
+                  <option>Postres</option>
+                </select>
+              </div>
+              <button type="button" @click="addCustomItem()" class="mt-5 rounded-md bg-red-600 px-6 py-3 text-sm font-black uppercase tracking-[0.2em] text-white transition hover:bg-red-700">Añadir manual</button>
+            </section>
+          </div>
+
+          <aside class="rounded-[2rem] border border-white/10 bg-stone-950 p-6 shadow-2xl lg:sticky lg:top-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-[10px] font-black uppercase tracking-[0.3em] text-red-300">Pedido de mesa</p>
+                <h2 class="mt-2 text-3xl font-black text-white" x-text="tableNumber || 'Mesa pendiente'"></h2>
+              </div>
+              <span class="rounded-full bg-white/10 px-3 py-2 text-sm font-black text-white" x-text="`${cart.length} ítems`"></span>
+            </div>
+
+            <div class="mt-6 max-h-[26rem] space-y-3 overflow-y-auto pr-1">
+              <template x-for="item in cart" :key="item.id">
+                <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div class="flex items-start justify-between gap-3">
+                    <div>
+                      <p class="text-sm font-black text-white" x-text="item.name"></p>
+                      <p class="mt-1 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400" x-text="item.cat"></p>
+                    </div>
+                    <span class="text-sm font-black text-red-300" x-text="`$ ${(item.price * item.qty).toFixed(2)}`"></span>
+                  </div>
+                  <div class="mt-4 flex items-center justify-between">
+                    <p class="text-xs font-bold text-stone-400" x-text="`$ ${item.price.toFixed(2)} c/u`"></p>
+                    <div class="flex items-center gap-2">
+                      <button type="button" @click="updateQty(item.id, -1)" class="h-8 w-8 rounded-xl bg-white/10 font-black text-white">-</button>
+                      <span class="min-w-6 text-center text-sm font-black text-white" x-text="item.qty"></span>
+                      <button type="button" @click="updateQty(item.id, 1)" class="h-8 w-8 rounded-xl bg-white/10 font-black text-white">+</button>
+                    </div>
+                  </div>
+                </div>
+              </template>
+
+              <p x-show="cart.length === 0" class="rounded-2xl border border-dashed border-white/15 p-6 text-center text-sm font-bold text-stone-400">Todavía no hay productos en el pedido.</p>
+            </div>
+
+            <div class="mt-6 border-t border-white/10 pt-6">
+              <div class="flex justify-between text-sm font-black text-stone-300">
+                <span>Subtotal</span>
+                <span x-text="`$ ${subtotal.toFixed(2)}`"></span>
+              </div>
+              <div class="mt-2 flex justify-between text-sm font-black text-stone-300">
+                <span>IVA 18%</span>
+                <span x-text="`$ ${tax.toFixed(2)}`"></span>
+              </div>
+              <div class="mt-4 flex justify-between text-2xl font-black text-white">
+                <span>Total</span>
+                <span x-text="`$ ${total.toFixed(2)}`"></span>
+              </div>
+            </div>
+
+            <button type="button" @click="sendOrder()" class="mt-6 w-full rounded-md bg-red-600 px-6 py-4 text-sm font-black uppercase tracking-[0.3em] text-white transition hover:bg-red-700">Hacer pedido</button>
+            <p x-show="orderSent" class="mt-4 text-sm font-semibold text-red-200">Comanda enviada a cocina correctamente.</p>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

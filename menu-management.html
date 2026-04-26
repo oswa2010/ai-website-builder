@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-stone-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Gestor de Carta Pro - RestoPro</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    body { overflow: hidden; position: fixed; width: 100%; height: 100%; }
+    .main-content { height: calc(100vh - 80px); overflow-y: auto; }
+    @media (max-width: 768px) { .main-content { height: calc(100vh - 140px); } }
+    .custom-scroll::-webkit-scrollbar { width: 4px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #e7e5e4; border-radius: 10px; }
+  </style>
+</head>
+<body class="h-full font-sans antialiased text-stone-900" x-data="{ 
+    sidebarOpen: false, 
+    modalOpen: false,
+    galleryOpen: false,
+    activeTab: 'Comida',
+    editMode: false,
+    editingId: null,
+    formItem: { name: '', price: '', cat: 'Comida', status: 'Visible', img: '' },
+    
+    // LIBRERÍA DE IMÁGENES PRE-CARGADAS
+    imageGallery: [
+        { url: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400', tag: 'Ensalada' },
+        { url: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400', tag: 'Pizza' },
+        { url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400', tag: 'Burger' },
+        { url: 'https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=400', tag: 'Risotto' },
+        { url: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400', tag: 'Vino' },
+        { url: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400', tag: 'Cóctel' },
+        { id: 13, url: 'https://images.unsplash.com/photo-1557800636-894a64c1696f?w=400', tag: 'Jugo' },
+        { url: 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=400', tag: 'Postre 1' },
+        { url: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400', tag: 'Postre 2' },
+        { url: 'https://images.unsplash.com/photo-1564355808539-22fda35bed7e?w=400', tag: 'Postre 3' },
+        { url: 'https://images.unsplash.com/photo-1612874742237-6526221588e3?w=400', tag: 'Pasta' },
+        { url: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=400', tag: 'Salmón' }
+    ],
+
+    menuItems: [
+        { id: 1, name: 'Ensalada Zen', price: 12.50, cat: 'Comida', status: 'Visible', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100' },
+        { id: 2, name: 'Pizza Napolitana', price: 14.00, cat: 'Comida', status: 'Visible', img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=100' },
+        { id: 3, name: 'Lomo Saltado', price: 35.00, cat: 'Comida', status: 'Visible', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100' },
+        { id: 4, name: 'Ceviche Pro', price: 42.00, cat: 'Comida', status: 'Visible', img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=100' },
+        { id: 5, name: 'Burger La Jefa', price: 16.50, cat: 'Comida', status: 'Visible', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=100' },
+        { id: 10, name: 'Cerveza Artesana', price: 12.00, cat: 'Bebidas', status: 'Visible', img: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=100' },
+        { id: 20, name: 'Tarta de Queso', price: 15.00, cat: 'Postres', status: 'Visible', img: 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=100' }
+    ],
+
+    get filteredItems() { return this.menuItems.filter(item => item.cat === this.activeTab); },
+    
+    openAddModal() {
+        this.editMode = false;
+        this.formItem = { name: '', price: '', cat: this.activeTab, status: 'Visible', img: 'https://placehold.co/400x400?text=Elegir+Imagen' };
+        this.modalOpen = true;
+    },
+    openEditModal(item) {
+        this.editMode = true;
+        this.editingId = item.id;
+        this.formItem = { ...item };
+        this.modalOpen = true;
+    },
+    saveItem() {
+        if (this.editMode) {
+            let index = this.menuItems.findIndex(i => i.id === this.editingId);
+            this.menuItems[index] = { ...this.formItem };
+        } else {
+            this.formItem.id = Date.now();
+            this.menuItems.push({ ...this.formItem });
+        }
+        this.modalOpen = false;
+    }
+}">
+  
+  <div class="flex h-full overflow-hidden">
+    <!-- Sidebar -->
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-stone-200 transform transition-transform duration-300 lg:relative lg:translate-x-0 flex flex-col shadow-2xl lg:shadow-none">
+      <div class="flex flex-col flex-1 pt-8 pb-4 px-6 overflow-y-auto">
+        <div class="flex items-center justify-between mb-12">
+            <div class="flex items-center gap-3">
+                <div class="bg-red-600 p-2 rounded-xl text-white font-black shadow-lg">R</div>
+                <span class="text-xl font-black tracking-tighter uppercase italic">RestoPro</span>
+            </div>
+            <button @click="sidebarOpen = false" class="lg:hidden p-2 text-stone-400 hover:text-red-600 transition"><svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        </div>
+        <nav class="space-y-1 flex-1">
+          <a href="/dashboard.html" class="sidebar-link px-6 py-4 flex items-center gap-3 text-stone-400 font-bold uppercase text-[10px] tracking-widest hover:bg-stone-50 rounded-xl transition">Dashboard</a>
+          <a href="/reservations.html" class="sidebar-link px-6 py-4 flex items-center gap-3 text-stone-400 font-bold uppercase text-[10px] tracking-widest hover:bg-stone-50 rounded-xl transition">Reservas</a>
+          <a href="/menu-management.html" class="sidebar-link active px-6 py-4 flex items-center gap-3 text-red-600 bg-red-50 font-black uppercase text-[10px] tracking-widest rounded-xl shadow-sm">La Carta</a>
+        </nav>
+        <div class="pt-6 border-t border-stone-100 mt-auto">
+          <a href="/index.html" class="flex items-center px-4 py-3 text-[10px] font-black text-red-600 uppercase tracking-widest bg-red-50 rounded-xl hover:bg-red-100 transition">Regresar Inicio</a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main View Port -->
+    <div class="flex-1 flex flex-col min-w-0 bg-stone-50 h-full relative overflow-hidden">
+      <!-- Header Fijo -->
+      <header class="bg-white border-b border-stone-200 px-6 py-4 flex justify-between items-center shadow-sm z-30 shrink-0">
+        <div class="flex items-center gap-4">
+            <button @click="sidebarOpen = true" class="lg:hidden p-2 bg-stone-100 rounded-xl transition hover:bg-stone-200"><svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
+            <h1 class="text-xl font-black uppercase italic tracking-tighter">Editor de Menú</h1>
+        </div>
+        <button @click="openAddModal()" class="bg-stone-950 text-white px-8 py-3 rounded-full font-black text-xs uppercase shadow-xl hover:bg-red-600 transition-all tracking-widest">+ Añadir Item</button>
+      </header>
+
+      <!-- Pestañas Fijas -->
+      <div class="bg-white border-b border-stone-100 px-6 py-4 flex justify-center shrink-0 z-20">
+          <div class="flex bg-stone-100 p-1.5 rounded-[2rem] border border-stone-200 w-full max-w-md shadow-inner">
+              <template x-for="cat in ['Comida', 'Bebidas', 'Postres']">
+                  <button @click="activeTab = cat" 
+                          :class="activeTab === cat ? 'bg-white text-red-600 shadow-xl' : 'text-stone-500 hover:text-stone-900'"
+                          class="flex-1 py-3.5 rounded-[1.5rem] font-black uppercase text-[10px] tracking-[0.2em] transition-all duration-300" x-text="cat"></button>
+              </template>
+          </div>
+      </div>
+
+      <!-- Zona de Contenido -->
+      <main class="flex-1 overflow-y-auto p-4 md:p-10 main-content custom-scroll pb-32">
+        <div class="bg-white rounded-[3rem] shadow-sm border border-stone-200 overflow-hidden">
+          <table class="min-w-full divide-y divide-stone-100">
+            <thead class="bg-stone-50/50">
+              <tr>
+                <th class="px-8 py-6 text-left text-[10px] font-black text-stone-400 uppercase tracking-widest">Producto</th>
+                <th class="px-8 py-6 text-left text-[10px] font-black text-stone-400 uppercase tracking-widest">Precio Venta</th>
+                <th class="px-8 py-6 text-right text-[10px] font-black text-stone-400 uppercase tracking-widest">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-100 bg-white">
+              <template x-for="item in filteredItems" :key="item.id">
+                <tr class="hover:bg-stone-50/50 transition duration-300 group">
+                  <td class="px-8 py-6">
+                    <div class="flex items-center gap-6">
+                        <div class="h-20 w-20 rounded-[1.5rem] overflow-hidden shadow-lg border-2 border-white group-hover:scale-110 transition-transform duration-500">
+                            <img :src="item.img" class="h-full w-full object-cover">
+                        </div>
+                        <div>
+                            <p class="text-sm font-black text-stone-900 uppercase tracking-tight" x-text="item.name"></p>
+                            <p class="text-[9px] font-bold text-stone-400 uppercase tracking-[0.3em]" x-text="item.cat"></p>
+                        </div>
+                    </div>
+                  </td>
+                  <td class="px-8 py-6">
+                    <span class="text-base font-black text-red-600" x-text="`$ ${parseFloat(item.price).toFixed(2)}`"></span>
+                  </td>
+                  <td class="px-8 py-6 text-right">
+                    <button @click="openEditModal(item)" class="bg-stone-100 hover:bg-stone-900 hover:text-white p-4 rounded-2xl transition-all duration-300 shadow-sm">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    </button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal con Galería de Imágenes (Añadir/Editar) -->
+  <div x-show="modalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-stone-950/95 backdrop-blur-xl" x-cloak>
+    <div class="bg-white rounded-[3.5rem] w-full max-w-4xl flex h-[90vh] overflow-hidden shadow-2xl border border-white/20">
+        
+        <!-- Izquierda: Formulario -->
+        <div class="w-full md:w-1/2 p-14 overflow-y-auto custom-scroll border-r border-stone-100 flex flex-col">
+            <h3 class="text-3xl font-black uppercase italic tracking-tighter text-stone-900 mb-10" x-text="editMode ? 'Editar Producto' : 'Añadir Producto'"></h3>
+            
+            <div class="space-y-8 flex-1">
+                <div class="relative group mx-auto w-fit">
+                    <div class="h-48 w-48 rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-stone-50 transition-transform group-hover:scale-105">
+                        <img :src="formItem.img" class="h-full w-full object-cover">
+                    </div>
+                    <div class="mt-4 flex justify-center gap-2">
+                        <button @click="galleryOpen = true" class="bg-red-600 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg hover:bg-red-700 transition">🖼️ Galería</button>
+                        <div class="relative overflow-hidden">
+                            <input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer"
+                                   @change="const file = $event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (e) => formItem.img = e.target.result; reader.readAsDataURL(file); }">
+                            <button class="bg-stone-900 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg">📁 PC</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-black uppercase text-stone-400 mb-2 block tracking-widest">Nombre del Producto</label>
+                    <input type="text" x-model="formItem.name" class="w-full bg-stone-50 border-none rounded-2xl p-5 font-black text-stone-900 focus:ring-2 focus:ring-red-600 transition">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="text-[10px] font-black uppercase text-stone-400 mb-2 block tracking-widest">Precio USD ($)</label>
+                        <input type="number" step="0.01" x-model="formItem.price" class="w-full bg-stone-50 border-none rounded-2xl p-5 font-black text-stone-900">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black uppercase text-stone-400 mb-2 block tracking-widest">Categoría</label>
+                        <select x-model="formItem.cat" class="w-full bg-stone-50 border-none rounded-2xl p-5 font-black text-stone-900 outline-none appearance-none">
+                            <option>Comida</option><option>Bebidas</option><option>Postres</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-14 flex gap-4 pt-8 border-t border-stone-100">
+                <button @click="modalOpen = false" class="flex-1 py-5 bg-stone-100 text-stone-400 font-black text-[10px] uppercase rounded-3xl">Cancelar</button>
+                <button @click="saveItem()" class="flex-[2] py-5 bg-stone-900 text-white font-black text-[10px] uppercase rounded-3xl shadow-xl hover:bg-red-600 transition-all tracking-[0.2em]">Guardar Cambios</button>
+            </div>
+        </div>
+
+        <!-- Derecha: Galería Integrada (Ocultable) -->
+        <div class="w-full md:w-1/2 p-14 bg-stone-50 overflow-y-auto custom-scroll relative">
+            <div class="flex justify-between items-center mb-10">
+                <h3 class="text-sm font-black uppercase tracking-[0.2em] text-stone-900">Librería Gourmet Pro</h3>
+                <span class="bg-white px-3 py-1 rounded-full text-[8px] font-black text-stone-400 border border-stone-200 uppercase">12 Estilos HD</span>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <template x-for="img in imageGallery" :key="img.url">
+                    <div @click="formItem.img = img.url; galleryOpen = false" 
+                         class="group relative h-32 rounded-3xl overflow-hidden cursor-pointer border-4 border-transparent hover:border-red-600 transition-all duration-300 shadow-sm">
+                        <img :src="img.url" class="h-full w-full object-cover group-hover:scale-110 transition duration-700">
+                        <div class="absolute inset-0 bg-stone-900/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                            <span class="text-[8px] font-black text-white uppercase tracking-widest" x-text="img.tag"></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+            
+            <div class="mt-12 bg-white p-8 rounded-[2rem] border border-stone-200">
+                <p class="text-[9px] font-bold text-stone-400 uppercase tracking-widest leading-relaxed">Las imágenes de esta galería están optimizadas para carga rápida y visualización en pantallas Retina.</p>
+            </div>
+        </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-stone-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventario Visual Pro - RestoPro</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="h-full font-sans antialiased text-stone-900" x-data="{ sidebarOpen: false }">
+  
+  <div class="flex h-full overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="hidden lg:flex lg:flex-shrink-0 lg:w-72 lg:flex-col border-r border-stone-200 bg-white">
+      <div class="flex flex-col flex-1 pt-5 pb-4 px-4">
+        <div class="flex items-center px-2 mb-8">
+          <div class="bg-red-600 p-2 rounded-xl text-white font-black italic shadow-lg">R</div>
+          <span class="ml-3 text-xl font-black text-stone-900 tracking-tighter uppercase">Resto<span class="text-red-600">Pro</span></span>
+        </div>
+        <nav class="space-y-1 flex-1">
+          <a href="/dashboard.html" class="flex items-center px-4 py-3 text-sm font-bold text-stone-400 hover:bg-stone-50 rounded-xl transition">Dashboard</a>
+          <a href="/reservations.html" class="flex items-center px-4 py-3 text-sm font-bold text-stone-400 hover:bg-stone-50 rounded-xl transition">Reservas</a>
+          <a href="/inventory.html" class="flex items-center px-4 py-3 text-sm font-bold text-red-600 bg-red-50 rounded-xl">Inventario</a>
+        </nav>
+      </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <header class="bg-white border-b border-stone-200 px-8 py-5 flex justify-between items-center z-10">
+        <h1 class="text-xl font-black text-stone-900 uppercase italic">Control de Stock</h1>
+        <div class="flex gap-3">
+            <button class="bg-stone-900 text-white px-6 py-2.5 rounded-full font-black text-[10px] uppercase tracking-widest shadow-xl hover:bg-red-600 transition-all">+ Alta Producto</button>
+        </div>
+      </header>
+
+      <main class="flex-1 overflow-y-auto p-8 bg-stone-50">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          
+          <!-- Item: Solomillo -->
+          <div class="bg-white rounded-[2.5rem] border border-stone-200 shadow-sm overflow-hidden group hover:shadow-xl transition-all duration-500">
+            <div class="h-48 overflow-hidden relative">
+              <img src="https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=300&fit=crop" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+              <div class="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Crítico</div>
+            </div>
+            <div class="p-8">
+              <p class="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-1">Carnes</p>
+              <h3 class="text-lg font-black text-stone-900 mb-6 uppercase tracking-tighter">Solomillo Ternera</h3>
+              
+              <div class="space-y-2">
+                <div class="flex justify-between text-[11px] font-black uppercase">
+                  <span class="text-stone-500">Stock actual</span>
+                  <span class="text-red-600">4.5 kg / 15kg</span>
+                </div>
+                <div class="w-full bg-stone-100 h-3 rounded-full overflow-hidden">
+                  <div class="bg-red-500 h-full rounded-full" style="width: 30%"></div>
+                </div>
+              </div>
+              
+              <button class="w-full mt-8 py-3 bg-stone-50 hover:bg-stone-100 text-stone-900 rounded-2xl text-[10px] font-black uppercase tracking-widest transition">Gestionar Pedido</button>
+            </div>
+          </div>
+
+          <!-- Item: Vino -->
+          <div class="bg-white rounded-[2.5rem] border border-stone-200 shadow-sm overflow-hidden group hover:shadow-xl transition-all duration-500">
+            <div class="h-48 overflow-hidden relative">
+              <img src="https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&h=300&fit=crop" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+              <div class="absolute top-4 right-4 bg-amber-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Bajo</div>
+            </div>
+            <div class="p-8">
+              <p class="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-1">Bodega</p>
+              <h3 class="text-lg font-black text-stone-900 mb-6 uppercase tracking-tighter">Vino Reserva</h3>
+              
+              <div class="space-y-2">
+                <div class="flex justify-between text-[11px] font-black uppercase">
+                  <span class="text-stone-500">Stock actual</span>
+                  <span class="text-amber-600">8 Bot. / 24</span>
+                </div>
+                <div class="w-full bg-stone-100 h-3 rounded-full overflow-hidden">
+                  <div class="bg-amber-500 h-full rounded-full" style="width: 45%"></div>
+                </div>
+              </div>
+              
+              <button class="w-full mt-8 py-3 bg-stone-50 hover:bg-stone-100 text-stone-900 rounded-2xl text-[10px] font-black uppercase tracking-widest transition">Gestionar Pedido</button>
+            </div>
+          </div>
+
+          <!-- Item: Tomate -->
+          <div class="bg-white rounded-[2.5rem] border border-stone-200 shadow-sm overflow-hidden group hover:shadow-xl transition-all duration-500">
+            <div class="h-48 overflow-hidden relative">
+              <img src="https://images.unsplash.com/photo-1557844352-761f2565b576?w=400&h=300&fit=crop" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+              <div class="absolute top-4 right-4 bg-emerald-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">OK</div>
+            </div>
+            <div class="p-8">
+              <p class="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-1">Verduras</p>
+              <h3 class="text-lg font-black text-stone-900 mb-6 uppercase tracking-tighter">Tomate Cherry</h3>
+              
+              <div class="space-y-2">
+                <div class="flex justify-between text-[11px] font-black uppercase">
+                  <span class="text-stone-500">Stock actual</span>
+                  <span class="text-emerald-600">18 kg / 20kg</span>
+                </div>
+                <div class="w-full bg-stone-100 h-3 rounded-full overflow-hidden">
+                  <div class="bg-emerald-500 h-full rounded-full" style="width: 90%"></div>
+                </div>
+              </div>
+              
+              <button class="w-full mt-8 py-3 bg-stone-50 hover:bg-stone-100 text-stone-900 rounded-2xl text-[10px] font-black uppercase tracking-widest transition">Ver Detalles</button>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+</body>
+</html>

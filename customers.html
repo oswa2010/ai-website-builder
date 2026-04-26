@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-stone-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Base de Clientes - RestoPro Ultra</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="h-full font-sans antialiased text-stone-900" x-data="{ 
+    customers: [],
+    search: '',
+    init() {
+        const saved = localStorage.getItem('restopro_reservations');
+        if (saved) {
+            this.customers = JSON.parse(saved);
+        }
+    },
+    get filteredCustomers() {
+        return this.customers.filter(c => 
+            c.cedula.includes(this.search) || 
+            c.nombre.toLowerCase().includes(this.search.toLowerCase()) ||
+            c.email.toLowerCase().includes(this.search.toLowerCase())
+        );
+    }
+}">
+  
+  <div class="flex h-full overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="hidden lg:flex lg:flex-shrink-0 lg:w-72 lg:flex-col border-r border-stone-200 bg-white">
+      <div class="flex flex-col flex-1 pt-8 pb-4 px-4">
+        <div class="flex items-center px-2 mb-12">
+          <div class="bg-red-600 p-2 rounded-xl text-white font-black">R</div>
+          <span class="ml-3 text-xl font-black tracking-tighter uppercase italic">Resto<span class="text-red-600">Pro</span></span>
+        </div>
+        <nav class="space-y-1 flex-1">
+          <a href="/dashboard.html" class="sidebar-link">Dashboard</a>
+          <a href="/reservations.html" class="sidebar-link">Reservas</a>
+          <a href="/customers.html" class="sidebar-link active text-red-600 font-black">Clientes</a>
+          <a href="/billing.html" class="sidebar-link">Facturación</a>
+        </nav>
+      </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col min-w-0 bg-stone-50 overflow-hidden">
+      <header class="bg-white border-b border-stone-200 px-8 py-6 flex justify-between items-center z-10">
+        <div>
+            <h1 class="text-2xl font-black uppercase italic tracking-tighter">Base de Datos de Clientes</h1>
+            <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest mt-1" x-text="`${customers.length} Miembros Registrados`"></p>
+        </div>
+        <input type="text" x-model="search" placeholder="Buscar por Cédula, Nombre o Email..." 
+               class="bg-stone-50 border border-stone-100 rounded-full px-6 py-2.5 text-xs font-bold outline-none focus:border-red-600 transition-all w-80">
+      </header>
+
+      <main class="flex-1 overflow-y-auto p-8">
+        <div class="bg-white rounded-[3rem] shadow-sm border border-stone-200 overflow-hidden">
+          <table class="min-w-full divide-y divide-stone-100">
+            <thead class="bg-stone-50/50">
+              <tr>
+                <th class="px-10 py-5 text-left text-[10px] font-black text-stone-400 uppercase tracking-widest">Identidad / Cédula</th>
+                <th class="px-10 py-5 text-left text-[10px] font-black text-stone-400 uppercase tracking-widest">Contacto</th>
+                <th class="px-10 py-5 text-left text-[10px] font-black text-stone-400 uppercase tracking-widest">Estado</th>
+                <th class="px-10 py-5 text-right text-[10px] font-black text-stone-400 uppercase tracking-widest">Acción</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-100 bg-white">
+              <template x-for="c in filteredCustomers" :key="c.cedula">
+                <tr class="hover:bg-stone-50/80 transition group">
+                  <td class="px-10 py-7">
+                    <p class="text-sm font-black text-stone-900 uppercase" x-text="`${c.nombre} ${c.apellidos}`"></p>
+                    <p class="text-[9px] font-bold text-red-600 uppercase tracking-widest" x-text="`ID: ${c.cedula}`"></p>
+                  </td>
+                  <td class="px-10 py-7">
+                    <p class="text-xs font-bold text-stone-700" x-text="c.email"></p>
+                    <p class="text-[10px] font-medium text-stone-400" x-text="c.telefono"></p>
+                  </td>
+                  <td class="px-10 py-7">
+                    <span :class="c.status === 'Verificado' ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-100 text-stone-500'" 
+                          class="px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest" x-text="c.status || 'Registrado'"></span>
+                  </td>
+                  <td class="px-10 py-7 text-right">
+                    <button class="text-[10px] font-black uppercase text-stone-400 hover:text-stone-900 transition">Ver Historial</button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+          
+          <div x-show="filteredCustomers.length === 0" class="p-20 text-center text-stone-300">
+            <p class="font-black text-xs uppercase tracking-widest">No se encontraron clientes</p>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+</body>
+</html>

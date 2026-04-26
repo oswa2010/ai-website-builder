@@ -1,0 +1,38 @@
+{
+  "name": "ai-website-builder",
+  "version": "2.0.0",
+  "description": "RestoPro — Professional restaurant website template built with Vite + Tailwind CSS v4. AI-assisted, no-code, production-ready.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "bash scripts/deploy.sh",
+    "publish:github": "bash scripts/publish-github.sh",
+    "publish:cloudflare": "bash scripts/publish-cloudflare.sh",
+    "publish:netlify": "bash scripts/publish-netlify.sh",
+    "publish:vercel": "bash scripts/publish-vercel.sh",
+    "audit:placeholders": "bash scripts/check-placeholders.sh"
+  },
+  "keywords": [
+    "ai",
+    "website-builder",
+    "restaurant",
+    "restopro",
+    "no-code",
+    "vite",
+    "tailwindcss",
+    "template",
+    "2026"
+  ],
+  "author": "RestoPro Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.8",
+    "tailwindcss": "^4.1.8",
+    "vite": "^6.3.4"
+  }
+}

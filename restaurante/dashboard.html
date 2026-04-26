@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-stone-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Executive Dashboard - RestoPro Ultra</title>
+  <link rel="stylesheet" href="../src/main.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+<body class="h-full font-sans antialiased text-stone-900" x-data="{
+    sidebarOpen: false,
+    floorTables: ['M-01','M-02','M-03','M-04','M-05','M-06','M-07','M-08'],
+    reservations: [],
+    assignmentOpen: false,
+    selectedTable: '',
+    activeOrderCategory: 'Comida',
+    orderCart: [],
+    assignmentForm: { id: null, customerKey: '', nombre: '', apellidos: '', telefono: '', pax: 2, orderNumber: '', orderDetails: '', serviceStatus: 'Reservada', table: '', status: 'Confirmada' },
+    newClientForm: { cedula: '', nombre: '', apellidos: '', telefono: '' },
+    menuItems: [
+      { id: 1, name: 'Lomo Saltado Premium', price: 35.00, cat: 'Comida' },
+      { id: 2, name: 'Ceviche Pro Especial', price: 42.00, cat: 'Comida' },
+      { id: 3, name: 'Pizza Napolitana', price: 18.00, cat: 'Comida' },
+      { id: 4, name: 'Burger La Jefa', price: 16.50, cat: 'Comida' },
+      { id: 5, name: 'Pasta Carbonara', price: 22.00, cat: 'Comida' },
+      { id: 10, name: 'Pisco Sour Clásico', price: 25.00, cat: 'Bebidas' },
+      { id: 11, name: 'Cerveza Artesana', price: 12.00, cat: 'Bebidas' },
+      { id: 12, name: 'Vino Tinto Copa', price: 15.00, cat: 'Bebidas' },
+      { id: 13, name: 'Jugo de Naranja', price: 8.00, cat: 'Bebidas' },
+      { id: 14, name: 'Agua Mineral Premium', price: 5.00, cat: 'Bebidas' },
+      { id: 20, name: 'Tarta de Queso', price: 15.00, cat: 'Postres' },
+      { id: 21, name: 'Suspiro Limeño Pro', price: 14.00, cat: 'Postres' },
+      { id: 22, name: 'Tiramisú Clásico', price: 16.00, cat: 'Postres' },
+      { id: 23, name: 'Brownie Supremo', price: 18.00, cat: 'Postres' },
+      { id: 24, name: 'Bowl de Frutas', price: 12.00, cat: 'Postres' }
+    ],
+
+    init() {
+      this.loadReservations();
+    },
+
+    loadReservations() {
+      const saved = localStorage.getItem('restopro_reservations');
+      this.reservations = saved ? JSON.parse(saved) : [];
+    },
+
+    saveReservations() {
+      localStorage.setItem('restopro_reservations', JSON.stringify(this.reservations));
+    },
+
+    getKitchenOrders() {
+      const saved = localStorage.getItem('restopro_kitchen_orders');
+      return saved ? JSON.parse(saved) : [];
+    },
+
+    saveKitchenOrders(orders) {
+      localStorage.setItem('restopro_kitchen_orders', JSON.stringify(orders));
+    },
+
+    getInvoices() {
+      const saved = localStorage.getItem('restopro_invoices');
+      return saved ? JSON.parse(saved) : [];
+    },
+
+    saveInvoices(invoices) {
+      localStorage.setItem('restopro_invoices', JSON.stringify(invoices));
+    },
+
+    reservationForTable(table) {
+      return this.reservations.find(res => res.table === table && res.table !== 'Pendiente' && res.status !== 'Pendiente') || null;
+    },
+
+    get availableCustomers() {
+      return this.reservations.filter(res => (res.nombre || res.apellidos || res.cedula));
+    },
+
+    isReserved(table) {
+      return !!this.reservationForTable(table);
+    },
+
+    tableStatus(table) {
+      const reservation = this.reservationForTable(table);
+      return reservation?.serviceStatus || (reservation ? 'Reservada' : 'Libre');
+    },
+
+    tableStatusClass(table) {
+      const status = this.tableStatus(table);
+      if (status === 'Reservada') return 'bg-amber-500 shadow-amber-200';
+      if (status === 'Atendiendo') return 'bg-red-500 shadow-red-200';
+      if (status === 'Cuenta pedida') return 'bg-violet-600 shadow-violet-300';
+      return 'bg-emerald-500 shadow-emerald-200';
+    },
+
+    tableStatusTextClass(table) {
+      return this.tableStatus(table) === 'Libre' ? 'text-stone-400' : 'text-stone-900';
+    },
+
+    tableLabel(table) {
+      const reservation = this.reservationForTable(table);
+      if (!reservation) return 'Disponible';
+      const fullName = [reservation.nombre, reservation.apellidos].filter(Boolean).join(' ').trim();
+      return fullName || 'Reserva activa';
+    },
+
+    paxLabel(table) {
+      const reservation = this.reservationForTable(table);
+      if (!reservation) return 'Libre';
+      return `${reservation.pax || 2} Pax`;
+    },
+
+    orderLabel(table) {
+      const reservation = this.reservationForTable(table);
+      return reservation?.orderNumber || 'Sin pedido';
+    },
+
+    orderDetailsLabel(table) {
+      const reservation = this.reservationForTable(table);
+      return reservation?.order || 'Sin detalle';
+    },
+
+    generateOrderNumber() {
+      return 'PED-' + Math.floor(1000 + Math.random() * 9000);
+    },
+
+    parseOrderDetails(order) {
+      if (!order || order === 'Servicio en mesa' || order === 'Solo mesa' || order === 'Sin detalle') return [];
+      return order.split(',').map((entry, index) => {
+        const clean = entry.trim();
+        const match = clean.match(/^(\d+)x\s+(.+)$/);
+        if (match) {
+          const name = match[2].trim();
+          const item = this.menuItems.find(menuItem => menuItem.name === name);
+          return { id: item?.id || `manual-${index}`, name, qty: Number(match[1]) || 1, price: item?.price || 0 };
+        }
+        const fallback = this.menuItems.find(menuItem => menuItem.name === clean);
+        return { id: fallback?.id || `manual-${index}`, name: clean, qty: 1, price: fallback?.price || 0 };
+      });
+    },
+
+    syncOrderDetails() {
+      this.assignmentForm.orderDetails = this.orderCart.length
+        ? this.orderCart.map(item => `${item.qty}x ${item.name}`).join(', ')
+        : '';
+    },
+
+    addMenuItem(item) {
+      const existing = this.orderCart.find(cartItem => cartItem.id === item.id);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        this.orderCart.push({ id: item.id, name: item.name, qty: 1, price: item.price });
+      }
+      this.syncOrderDetails();
+    },
+
+    updateCartItem(itemId, delta) {
+      const existing = this.orderCart.find(cartItem => cartItem.id === itemId);
+      if (!existing) return;
+      existing.qty += delta;
+      if (existing.qty <= 0) {
+        this.orderCart = this.orderCart.filter(cartItem => cartItem.id !== itemId);
+      }
+      this.syncOrderDetails();
+    },
+
+    clearOrderCart() {
+      this.orderCart = [];
+      this.assignmentForm.orderDetails = '';
+      this.assignmentForm.orderNumber = this.generateOrderNumber();
+      this.activeOrderCategory = 'Comida';
+    },
+
+    get filteredMenuItems() {
+      return this.menuItems.filter(item => item.cat === this.activeOrderCategory);
+    },
+
+    get orderSubtotal() {
+      return this.orderCart.reduce((sum, item) => sum + ((item.price || 0) * item.qty), 0);
+    },
+
+    get orderTax() {
+      return this.orderSubtotal * 0.18;
+    },
+
+    get orderTotal() {
+      return this.orderSubtotal + this.orderTax;
+    },
+
+    openAssignment(table) {
+      const reservation = this.reservationForTable(table);
+      this.selectedTable = table;
+      this.assignmentOpen = true;
+      this.activeOrderCategory = 'Comida';
+      this.assignmentForm = reservation ? {
+        id: reservation.id || null,
+        customerKey: reservation.cedula || '',
+        nombre: reservation.nombre || '',
+        apellidos: reservation.apellidos || '',
+        telefono: reservation.telefono || '',
+        pax: reservation.pax || 2,
+        orderNumber: reservation.orderNumber || this.generateOrderNumber(),
+        orderDetails: reservation.order || '',
+        serviceStatus: reservation.serviceStatus || 'Reservada',
+        table,
+        status: reservation.status || 'Confirmada'
+      } : {
+        id: null,
+        customerKey: '',
+        nombre: '',
+        apellidos: '',
+        telefono: '',
+        pax: 2,
+        orderNumber: this.generateOrderNumber(),
+        orderDetails: '',
+        serviceStatus: 'Reservada',
+        table,
+        status: 'Confirmada'
+      };
+      this.orderCart = reservation?.orderItems?.length
+        ? reservation.orderItems.map(item => ({ id: item.id, name: item.name, qty: item.qty, price: item.price || 0 }))
+        : this.parseOrderDetails(this.assignmentForm.orderDetails);
+    },
+
+    onCustomerChange() {
+      const customer = this.availableCustomers.find(res => res.cedula === this.assignmentForm.customerKey);
+      if (!customer) return;
+      this.assignmentForm.id = customer.id || null;
+      this.assignmentForm.nombre = customer.nombre || '';
+      this.assignmentForm.apellidos = customer.apellidos || '';
+      this.assignmentForm.telefono = customer.telefono || '';
+      this.assignmentForm.pax = customer.pax || 2;
+    },
+
+    addNewClient() {
+      if (!this.newClientForm.cedula.trim() || !this.newClientForm.nombre.trim()) {
+        alert('Ingresa al menos cédula y nombre para crear el cliente.');
+        return;
+      }
+
+      const clientId = Date.now();
+      const newClient = {
+        id: clientId,
+        cedula: this.newClientForm.cedula.trim(),
+        nombre: this.newClientForm.nombre.trim(),
+        apellidos: this.newClientForm.apellidos.trim(),
+        telefono: this.newClientForm.telefono.trim(),
+        email: '',
+        pax: Number(this.assignmentForm.pax) || 2,
+        time: '14:00',
+        table: 'Pendiente',
+        status: 'Pendiente',
+        order: 'Solo mesa',
+        orderItems: [],
+        orderNumber: '',
+        serviceStatus: 'Libre',
+        reservationDate: '',
+        source: 'dashboard'
+      };
+
+      const existingClientIndex = this.reservations.findIndex(res => res.cedula === newClient.cedula);
+      if (existingClientIndex >= 0) {
+        this.reservations[existingClientIndex] = { ...this.reservations[existingClientIndex], ...newClient };
+      } else {
+        this.reservations.unshift(newClient);
+      }
+
+      this.saveReservations();
+
+      this.assignmentForm.customerKey = newClient.cedula;
+      this.assignmentForm.id = newClient.id;
+      this.assignmentForm.nombre = newClient.nombre;
+      this.assignmentForm.apellidos = newClient.apellidos;
+      this.assignmentForm.telefono = newClient.telefono;
+      this.newClientForm = { cedula: '', nombre: '', apellidos: '', telefono: '' };
+      alert(`Cliente ${newClient.nombre} añadido correctamente.`);
+    },
+
+    saveAssignment() {
+      if (!this.assignmentForm.nombre.trim()) {
+        alert('Selecciona o escribe el nombre del cliente.');
+        return;
+      }
+
+      const payload = {
+        id: this.assignmentForm.id || Date.now(),
+        cedula: this.assignmentForm.customerKey || `MESA-${Date.now().toString().slice(-6)}`,
+        nombre: this.assignmentForm.nombre.trim(),
+        apellidos: this.assignmentForm.apellidos.trim(),
+        telefono: this.assignmentForm.telefono.trim(),
+        email: '',
+        pax: Number(this.assignmentForm.pax) || 2,
+        time: '14:00',
+        table: this.selectedTable,
+        status: 'Confirmada',
+        order: this.assignmentForm.orderDetails.trim() || 'Servicio en mesa',
+        orderItems: this.orderCart.map(item => ({ id: item.id, name: item.name, qty: item.qty, price: item.price || 0 })),
+        orderNumber: this.assignmentForm.orderNumber.trim() || this.generateOrderNumber(),
+        serviceStatus: this.assignmentForm.serviceStatus || 'Reservada',
+        reservationDate: '',
+        source: 'dashboard'
+      };
+
+      const existingById = this.reservations.findIndex(res => res.id === payload.id);
+      const existingTableIndex = this.reservations.findIndex(res => res.table === this.selectedTable);
+
+      if (existingById >= 0) {
+        this.reservations[existingById] = { ...this.reservations[existingById], ...payload };
+      } else if (existingTableIndex >= 0) {
+        this.reservations[existingTableIndex] = { ...this.reservations[existingTableIndex], ...payload };
+      } else {
+        this.reservations.unshift(payload);
+      }
+
+      this.saveReservations();
+      this.assignmentOpen = false;
+    },
+
+    sendOrderToKitchen() {
+      if (!this.assignmentForm.nombre.trim()) {
+        alert('Selecciona o escribe el nombre del cliente antes de enviar la comanda.');
+        return;
+      }
+
+      if (this.orderCart.length === 0) {
+        alert('Agrega productos de comida, bebida o postre antes de enviar a cocina.');
+        return;
+      }
+
+      const payload = {
+        id: this.assignmentForm.id || Date.now(),
+        cedula: this.assignmentForm.customerKey || `MESA-${Date.now().toString().slice(-6)}`,
+        nombre: this.assignmentForm.nombre.trim(),
+        apellidos: this.assignmentForm.apellidos.trim(),
+        telefono: this.assignmentForm.telefono.trim(),
+        email: '',
+        pax: Number(this.assignmentForm.pax) || 2,
+        time: '14:00',
+        table: this.selectedTable,
+        status: 'Confirmada',
+        order: this.assignmentForm.orderDetails.trim() || 'Servicio en mesa',
+        orderItems: this.orderCart.map(item => ({ id: item.id, name: item.name, qty: item.qty, price: item.price || 0 })),
+        orderNumber: this.assignmentForm.orderNumber.trim() || this.generateOrderNumber(),
+        serviceStatus: 'Atendiendo',
+        reservationDate: '',
+        source: 'dashboard'
+      };
+
+      const existingById = this.reservations.findIndex(res => res.id === payload.id);
+      const existingTableIndex = this.reservations.findIndex(res => res.table === this.selectedTable);
+
+      if (existingById >= 0) {
+        this.reservations[existingById] = { ...this.reservations[existingById], ...payload };
+      } else if (existingTableIndex >= 0) {
+        this.reservations[existingTableIndex] = { ...this.reservations[existingTableIndex], ...payload };
+      } else {
+        this.reservations.unshift(payload);
+      }
+      this.saveReservations();
+
+      const kitchenOrders = this.getKitchenOrders();
+      const kitchenPayload = {
+        id: payload.orderNumber,
+        table: this.selectedTable,
+        type: 'Mesa',
+        customer: [payload.nombre, payload.apellidos].filter(Boolean).join(' ').trim(),
+        orderNumber: payload.orderNumber,
+        items: this.orderCart.map(item => ({
+          n: item.name,
+          q: item.qty,
+          c: this.menuItems.find(menuItem => menuItem.id === item.id)?.cat || 'Mesa'
+        })),
+        start: Date.now(),
+        status: 'new'
+      };
+
+      const existingKitchenIndex = kitchenOrders.findIndex(order => order.id === kitchenPayload.id || order.table === kitchenPayload.table);
+      if (existingKitchenIndex >= 0) {
+        kitchenPayload.start = kitchenOrders[existingKitchenIndex].start || kitchenPayload.start;
+        kitchenOrders[existingKitchenIndex] = kitchenPayload;
+      } else {
+        kitchenOrders.unshift(kitchenPayload);
+      }
+      this.saveKitchenOrders(kitchenOrders);
+
+      this.assignmentOpen = false;
+      alert(`Comanda ${payload.orderNumber} enviada a cocina.`);
+    },
+
+    generateInvoiceForTable() {
+      if (!this.assignmentForm.nombre.trim()) {
+        alert('Selecciona o escribe el nombre del cliente antes de facturar.');
+        return;
+      }
+
+      const invoiceItems = this.orderCart.length > 0
+        ? this.orderCart.map(item => ({ name: item.name, qty: item.qty, price: item.price || 0 }))
+        : (this.reservationForTable(this.selectedTable)?.orderItems || []).map(item => ({ name: item.name, qty: item.qty, price: item.price || 0 }));
+
+      if (invoiceItems.length === 0) {
+        alert('La mesa no tiene productos para facturar.');
+        return;
+      }
+
+      const subtotal = invoiceItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      const tax = subtotal * 0.18;
+      const total = subtotal + tax;
+
+      const invoices = this.getInvoices();
+      const invoiceId = Date.now();
+      const ref = `FAC-${invoiceId.toString().slice(-6)}`;
+      const invoice = {
+        id: invoiceId,
+        ref,
+        table: this.selectedTable,
+        orderNumber: this.assignmentForm.orderNumber.trim() || this.generateOrderNumber(),
+        date: new Date().toLocaleString('es-ES'),
+        customer: {
+          ruc: this.assignmentForm.customerKey || `MESA-${this.selectedTable}`,
+          nombre: [this.assignmentForm.nombre, this.assignmentForm.apellidos].filter(Boolean).join(' ').trim(),
+          email: '',
+          telf: this.assignmentForm.telefono || ''
+        },
+        items: invoiceItems,
+        subtotal,
+        tax,
+        total
+      };
+
+      invoices.unshift(invoice);
+      this.saveInvoices(invoices);
+
+      const existingTableIndex = this.reservations.findIndex(res => res.table === this.selectedTable);
+      if (existingTableIndex >= 0) {
+        this.reservations[existingTableIndex] = {
+          ...this.reservations[existingTableIndex],
+          orderItems: invoiceItems,
+          orderNumber: invoice.orderNumber,
+          serviceStatus: 'Cuenta pedida'
+        };
+        this.saveReservations();
+      }
+
+      this.assignmentOpen = false;
+      alert(`Factura ${ref} generada para ${this.selectedTable}. Total: $ ${total.toFixed(2)}`);
+    },
+
+    releaseTable() {
+      if (!this.selectedTable) return;
+      const existingTableIndex = this.reservations.findIndex(res => res.table === this.selectedTable);
+      if (existingTableIndex < 0) {
+        this.assignmentOpen = false;
+        return;
+      }
+
+      if (!confirm(`¿Liberar la mesa ${this.selectedTable}?`)) return;
+
+      this.reservations[existingTableIndex] = {
+        ...this.reservations[existingTableIndex],
+        table: 'Pendiente',
+        status: 'Pendiente',
+        order: 'Solo mesa',
+        orderNumber: '',
+        serviceStatus: 'Libre'
+      };
+
+      this.saveReservations();
+
+      const kitchenOrders = this.getKitchenOrders().filter(order => order.table !== this.selectedTable);
+      this.saveKitchenOrders(kitchenOrders);
+      this.assignmentOpen = false;
+    }
+  }">
+  
+  <div class="flex h-full overflow-hidden">
+    <!-- Sidebar Elite -->
+    <aside class="hidden lg:flex lg:flex-shrink-0 lg:w-80 lg:flex-col border-r border-stone-200 bg-white">
+      <div class="flex flex-col flex-1 pt-8 pb-4 px-6">
+        <div class="flex items-center px-2 mb-12">
+          <div class="bg-red-600 p-2.5 rounded-2xl shadow-xl shadow-red-600/20 text-white">
+            <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          </div>
+          <span class="ml-4 text-2xl font-black tracking-tighter uppercase italic">Resto<span class="text-red-600">Pro</span></span>
+        </div>
+        
+        <nav class="space-y-2 flex-1">
+          <a href="dashboard.html" class="sidebar-link active">
+            <svg class="mr-4 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+            Overview
+          </a>
+          <a href="reservations.html" class="sidebar-link">
+            <svg class="mr-4 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            Reservas
+          </a>
+          <a href="../pos.html" class="sidebar-link">
+            <svg class="mr-4 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+            Punto de Venta
+          </a>
+          <a href="kitchen.html" class="sidebar-link">
+            <svg class="mr-4 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+            Cocina (KDS)
+          </a>
+        </nav>
+
+        <div class="pt-6 mt-6 border-t border-stone-100">
+            <a href="index.html" class="flex items-center px-6 py-4 text-[10px] font-black uppercase tracking-widest text-red-600 bg-red-50 rounded-[1.5rem] hover:bg-red-100 transition-all">
+                <svg class="mr-4 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Ver Sitio Público
+            </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main View Port -->
+    <div class="flex flex-col flex-1 min-w-0 bg-stone-50 overflow-hidden">
+      <!-- Top Header Elite -->
+      <header class="bg-white/80 backdrop-blur-md border-b border-stone-200 z-20">
+        <div class="px-10 py-6 flex justify-between items-center">
+          <div>
+            <h2 class="text-2xl font-black text-stone-900 uppercase italic tracking-tighter">Command Center</h2>
+            <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest mt-1">Real-time Business Intelligence</p>
+          </div>
+          <div class="flex items-center gap-6">
+            <div class="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-full border border-emerald-100">
+                <div class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span class="text-[9px] font-black text-emerald-700 uppercase tracking-widest">Servicio Activo</span>
+            </div>
+            <button class="h-12 w-12 bg-stone-900 rounded-2xl flex items-center justify-center text-white shadow-xl hover:bg-red-600 transition-all">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Advanced Main Area -->
+      <main class="flex-1 overflow-y-auto p-10 space-y-10">
+        
+        <!-- Premium KPI Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="bg-white p-8 rounded-[3rem] shadow-sm border border-stone-200 relative overflow-hidden group">
+                <div class="absolute -right-4 -top-4 h-24 w-24 bg-red-600/5 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
+                <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-4">Ventas Netas</p>
+                <h3 class="text-4xl font-black text-stone-950 tracking-tighter italic">$4,210.80</h3>
+                <div class="mt-4 flex items-center gap-2">
+                    <span class="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">↑ 12%</span>
+                </div>
+            </div>
+            <div class="bg-white p-8 rounded-[3rem] shadow-sm border border-stone-200">
+                <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-4">Pax Atendidos</p>
+                <h3 class="text-4xl font-black text-stone-950 tracking-tighter italic">184</h3>
+                <p class="mt-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Capacidad al 85%</p>
+            </div>
+            <div class="bg-white p-8 rounded-[3rem] shadow-sm border border-stone-200">
+                <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-4">Tiempo de Mesa</p>
+                <h3 class="text-4xl font-black text-stone-950 tracking-tighter italic">48 min</h3>
+                <p class="mt-4 text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Óptimo</p>
+            </div>
+            <div class="bg-stone-950 p-8 rounded-[3rem] shadow-2xl text-white">
+                <p class="text-[10px] font-black text-stone-500 uppercase tracking-widest mb-4">Alertas Stock</p>
+                <h3 class="text-4xl font-black text-red-500 tracking-tighter italic">03</h3>
+                <p class="mt-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Requiere atención</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <!-- Floor Map Elite -->
+            <div class="lg:col-span-2 bg-white p-10 rounded-[4rem] shadow-sm border border-stone-200">
+                <div class="flex justify-between items-center mb-10">
+                    <h4 class="text-sm font-black uppercase tracking-[0.2em]">Floor Management</h4>
+                    <div class="flex gap-6 text-[9px] font-black uppercase tracking-widest">
+                        <span class="flex items-center gap-2"><div class="h-2 w-2 rounded-full bg-emerald-500"></div> Libre</span>
+                        <span class="flex items-center gap-2"><div class="h-2 w-2 rounded-full bg-amber-500"></div> Reservada</span>
+                        <span class="flex items-center gap-2"><div class="h-2 w-2 rounded-full bg-red-500"></div> Atendiendo</span>
+                        <span class="flex items-center gap-2"><div class="h-2 w-2 rounded-full bg-violet-600"></div> Cuenta pedida</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-4 gap-8 p-12 bg-stone-50 rounded-[3rem] border-2 border-dashed border-stone-200">
+                    <template x-for="m in floorTables" :key="m">
+                        <div class="relative group cursor-pointer text-center" @click="openAssignment(m)">
+                            <div :class="tableStatusClass(m)" 
+                                 class="h-24 w-24 mx-auto rounded-3xl flex items-center justify-center text-white font-black shadow-2xl transform group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500" x-text="m"></div>
+                            <p class="mt-4 text-[9px] font-black uppercase" :class="tableStatusTextClass(m)" x-text="paxLabel(m)"></p>
+                            <p class="mt-1 text-[10px] font-black tracking-tight" :class="tableStatusTextClass(m)" x-text="tableLabel(m)"></p>
+                            <p class="mt-1 text-[9px] font-black uppercase tracking-widest" :class="tableStatusTextClass(m)" x-text="tableStatus(m)"></p>
+                            <p class="mt-1 text-[9px] font-black uppercase tracking-widest text-stone-400" x-text="orderLabel(m)"></p>
+                            <p class="mt-1 text-[9px] font-bold text-stone-500" x-text="orderDetailsLabel(m)"></p>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Kitchen Monitor Pro -->
+            <div class="bg-stone-900 p-10 rounded-[4rem] shadow-2xl text-white">
+                <h4 class="text-sm font-black uppercase tracking-[0.2em] mb-10 text-stone-500">Kitchen Live Feed</h4>
+                <div class="space-y-6">
+                    <div class="p-6 bg-white/5 border border-white/10 rounded-[2rem] hover:bg-white/10 transition-all">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-[10px] font-black text-red-500 uppercase tracking-widest">Mesa 04</span>
+                            <span class="text-[10px] font-bold text-stone-500">12:05 min</span>
+                        </div>
+                        <p class="text-lg font-black italic tracking-tighter uppercase">Solomillo Wagyu x2</p>
+                    </div>
+                    <div class="p-6 bg-white/5 border border-white/10 rounded-[2rem] hover:bg-white/10 transition-all">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Mesa 12</span>
+                            <span class="text-[10px] font-bold text-stone-500">04:20 min</span>
+                        </div>
+                        <p class="text-lg font-black italic tracking-tighter uppercase">Risotto Nero x1</p>
+                    </div>
+                </div>
+                <a href="kitchen.html" class="block w-full mt-10 py-5 bg-white text-center text-stone-950 rounded-full font-black text-[10px] uppercase tracking-[0.3em] hover:bg-red-600 hover:text-white transition-all">Gestionar Cocina</a>
+            </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <div x-show="assignmentOpen" class="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-4" x-cloak>
+    <div class="absolute inset-0 bg-stone-950/70 backdrop-blur-sm" @click="assignmentOpen = false"></div>
+    <div class="relative mx-auto my-4 flex w-full max-w-2xl max-h-[calc(100vh-2rem)] flex-col overflow-hidden rounded-[2rem] bg-white shadow-2xl">
+      <div class="flex items-start justify-between gap-6 border-b border-stone-100 px-6 py-5 sm:px-8">
+        <div>
+          <p class="text-[10px] font-black uppercase tracking-[0.3em] text-red-600">Gestionar mesa</p>
+          <h3 class="mt-2 text-3xl font-black uppercase tracking-tight text-stone-900" x-text="selectedTable"></h3>
+          <p class="mt-2 text-sm text-stone-500">Guarda el cliente, el número de pedido y la cantidad de comensales para esta mesa.</p>
+        </div>
+        <button @click="assignmentOpen = false" class="rounded-2xl bg-stone-100 px-4 py-2 text-xs font-black uppercase text-stone-500 transition hover:bg-stone-200">Cerrar</button>
+      </div>
+
+      <div class="overflow-y-auto px-6 py-6 sm:px-8">
+      <div class="grid gap-5 md:grid-cols-2">
+        <label class="block md:col-span-2">
+          <span class="text-[10px] font-black uppercase tracking-widest text-stone-400">Cliente registrado</span>
+          <select x-model="assignmentForm.customerKey" @change="onCustomerChange()" class="mt-2 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 font-bold text-stone-900 outline-none focus:border-red-600">
+            <option value="">Seleccionar cliente</option>
+            <template x-for="customer in availableCustomers" :key="customer.id || customer.cedula">
+              <option :value="customer.cedula" x-text="`${customer.nombre} ${customer.apellidos} - ${customer.cedula}`"></option>
+            </template>
+          </select>
+        </label>
+
+        <div class="md:col-span-2 rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="text-[10px] font-black uppercase tracking-widest text-red-600">Añadir nuevo cliente</p>
+              <p class="mt-1 text-sm font-bold text-stone-600">Crea el cliente aquí y lo asignamos a la mesa actual.</p>
+            </div>
+            <button type="button" @click="addNewClient()" class="rounded-2xl bg-red-600 px-5 py-3 text-xs font-black uppercase tracking-widest text-white transition hover:bg-red-700">Añadir cliente</button>
+          </div>
+          <div class="mt-4 grid gap-4 md:grid-cols-2">
+            <input type="text" x-model="newClientForm.cedula" placeholder="Cédula" class="rounded-2xl border border-stone-200 bg-white px-4 py-3 font-bold text-stone-900 outline-none focus:border-red-600">
+            <input type="text" x-model="newClientForm.nombre" placeholder="Nombre" class="rounded-2xl border border-stone-200 bg-white px-4 py-3 font-bold text-stone-900 outline-none focus:border-red-600">
+            <input type="text" x-model="newClientForm.apellidos" placeholder="Apellidos" class="rounded-2xl border border-stone-200 bg-white px-4 py-3 font-bold text-stone-900 outline-none focus:border-red-600">
+            <input type="tel" x-model="newClientForm.telefono" placeholder="Teléfono" class="rounded-2xl border border-stone-200 bg-white px-4 py-3 font-bold text-stone-900 outline-none focus:border-red-600">
+          </div>
+        </div>
+
+        <label class="block">
+          <span class="text-[10px] font-black uppercase tracking-widest text-stone-400">Nombre</span>
+          <input type="text" x-model="assignmentForm.nombre" class="mt-2 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 font-bold text-stone-900 outline-none focus:border-red-600">
+        </label>
+
+        <label class="block">
+          <span class="text-[10px] font-black uppercase tracking-widest text-stone-400">Apellidos</span>
+          <input type="text" x-model="assignmentForm.apellidos" class="mt-2 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 font-bold text-stone-900 outline-none focus:border-red-600">
+        </label>
+
+        <label class="block">
+          <span class="text-[10px] font-black uppercase tracking-widest text-stone-400">Teléfono</span>
+          <input type="tel" x-model="assignmentForm.telefono" class="mt-2 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 font-bold text-stone-900 outline-none focus:border-red-600">
+        </label>
+
+        <label class="block">
+          <span class="text-[10px] font-black uppercase tracking-widest text-stone-400">Comensales</span>
+          <input type="number" min="1" x-model="assignmentForm.pax" class="mt-2 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 font-bold text-stone-900 outline-none focus:border-red-600">
+        </label>
+
+        <label class="block">
+          <span class="text-[10px] font-black uppercase tracking-widest text-stone-400">Estado de mesa</span>
+          <select x-model="assignmentForm.serviceStatus" class="mt-2 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 font-bold text-stone-900 outline-none focus:border-red-600">
+            <option>Reservada</option>
+            <option>Atendiendo</option>
+            <option>Cuenta pedida</option>
+          </select>
+        </label>
+
+        <label class="block md:col-span-2">
+          <span class="text-[10px] font-black uppercase tracking-widest text-stone-400">Número de pedido</span>
+          <input type="text" x-model="assignmentForm.orderNumber" class="mt-2 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 font-bold text-stone-900 outline-none focus:border-red-600">
+        </label>
+
+        <div x-ref="orderBuilder" class="md:col-span-2 rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4 sm:p-5">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <span class="text-[10px] font-black uppercase tracking-widest text-stone-400">Carta para nuevo pedido</span>
+              <p class="mt-1 text-sm font-bold text-stone-600">Agrega productos por categoría a la mesa seleccionada.</p>
+            </div>
+            <div class="flex rounded-2xl bg-white p-1 shadow-sm">
+              <template x-for="cat in ['Comida', 'Bebidas', 'Postres']" :key="cat">
+                <button type="button" @click.stop.prevent="activeOrderCategory = cat"
+                        :class="activeOrderCategory === cat ? 'bg-red-600 text-white' : 'text-stone-500'"
+                        class="rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest transition"
+                        x-text="cat"></button>
+              </template>
+            </div>
+          </div>
+
+          <div class="mt-4 grid max-h-56 gap-3 overflow-y-auto pr-1 sm:grid-cols-2">
+            <template x-for="item in filteredMenuItems" :key="item.id">
+              <button type="button" @click.stop.prevent="addMenuItem(item)" :class="orderCart.find(cartItem => cartItem.id === item.id) ? 'border-red-400 bg-red-50' : 'border-stone-200 bg-white'" class="flex items-center justify-between rounded-2xl border px-4 py-3 text-left transition hover:border-red-300 hover:bg-red-50">
+                <div>
+                  <p class="text-sm font-black text-stone-900" x-text="item.name"></p>
+                  <p class="text-[10px] font-black uppercase tracking-widest text-stone-400" x-text="item.cat"></p>
+                </div>
+                <div class="text-right">
+                  <span class="text-sm font-black text-red-600" x-text="`$${item.price.toFixed(2)}`"></span>
+                  <p class="text-[10px] font-black uppercase tracking-widest text-stone-400" x-show="orderCart.find(cartItem => cartItem.id === item.id)" x-text="`${orderCart.find(cartItem => cartItem.id === item.id)?.qty || 0} agregados`"></p>
+                </div>
+              </button>
+            </template>
+          </div>
+
+          <div class="mt-5 rounded-2xl bg-white p-4">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-black uppercase tracking-widest text-stone-400">Pedido actual</span>
+              <button type="button" @click.stop.prevent="clearOrderCart()" class="text-[10px] font-black uppercase tracking-widest text-red-600 transition hover:text-red-700">Limpiar pedido</button>
+            </div>
+
+            <div class="mt-3 space-y-3" x-show="orderCart.length > 0">
+              <template x-for="item in orderCart" :key="item.id">
+                <div class="flex items-center justify-between gap-3 rounded-2xl bg-stone-50 px-4 py-3">
+                  <div>
+                    <p class="text-sm font-black text-stone-900" x-text="item.name"></p>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-stone-400" x-text="`$${item.price.toFixed(2)} c/u`"></p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button type="button" @click.stop.prevent="updateCartItem(item.id, -1)" class="h-8 w-8 rounded-xl bg-white font-black text-stone-700 shadow-sm">-</button>
+                    <span class="min-w-6 text-center text-sm font-black text-stone-900" x-text="item.qty"></span>
+                    <button type="button" @click.stop.prevent="updateCartItem(item.id, 1)" class="h-8 w-8 rounded-xl bg-white font-black text-stone-700 shadow-sm">+</button>
+                  </div>
+                </div>
+              </template>
+            </div>
+
+            <p x-show="orderCart.length === 0" class="mt-3 text-sm font-bold text-stone-400">Todavía no hay productos agregados a esta mesa.</p>
+            <input type="hidden" x-model="assignmentForm.orderDetails">
+            <div class="mt-4 border-t border-stone-100 pt-4">
+              <p class="mb-3 text-[10px] font-black uppercase tracking-widest text-stone-400">Desglose del consumo</p>
+              <div class="space-y-2" x-show="orderCart.length > 0">
+                <template x-for="item in orderCart" :key="`summary-${item.id}`">
+                  <div class="flex items-center justify-between text-xs font-bold text-stone-700">
+                    <span x-text="`${item.qty}x ${item.name}`"></span>
+                    <span x-text="`$ ${((item.price || 0) * item.qty).toFixed(2)}`"></span>
+                  </div>
+                </template>
+              </div>
+              <div class="flex justify-between text-xs font-black text-stone-500">
+                <span>Subtotal</span>
+                <span x-text="`$ ${orderSubtotal.toFixed(2)}`"></span>
+              </div>
+              <div class="mt-2 flex justify-between text-xs font-black text-stone-500">
+                <span>IVA 18%</span>
+                <span x-text="`$ ${orderTax.toFixed(2)}`"></span>
+              </div>
+              <div class="mt-3 flex justify-between text-lg font-black text-stone-900">
+                <span>Total mesa</span>
+                <span x-text="`$ ${orderTotal.toFixed(2)}`"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <div class="border-t border-stone-100 bg-white px-6 py-5 sm:px-8">
+      <div class="flex flex-col gap-3 sm:flex-row">
+        <button @click="assignmentOpen = false" class="flex-1 rounded-2xl bg-stone-100 py-4 text-xs font-black uppercase tracking-widest text-stone-600 transition hover:bg-stone-200">Regresar</button>
+        <a href="billing.html" class="flex-1 rounded-2xl bg-emerald-50 py-4 text-center text-xs font-black uppercase tracking-widest text-emerald-700 transition hover:bg-emerald-100">Abrir facturación</a>
+        <button x-show="isReserved(selectedTable)" @click="releaseTable()" class="flex-1 rounded-2xl bg-stone-900 py-4 text-xs font-black uppercase tracking-widest text-white transition hover:bg-stone-700">Liberar mesa</button>
+        <button @click="clearOrderCart(); $nextTick(() => $refs.orderBuilder?.scrollIntoView({ behavior: 'smooth', block: 'start' }))" class="flex-1 rounded-2xl bg-stone-100 py-4 text-xs font-black uppercase tracking-widest text-stone-600 transition hover:bg-stone-200">Nuevo pedido</button>
+        <button @click="saveAssignment()" class="flex-1 rounded-2xl bg-stone-900 py-4 text-xs font-black uppercase tracking-widest text-white transition hover:bg-stone-700">Guardar mesa</button>
+        <button @click="sendOrderToKitchen()" class="flex-[2] rounded-2xl bg-red-600 py-4 text-xs font-black uppercase tracking-widest text-white transition hover:bg-red-700">Iniciar pedido</button>
+        <button @click="generateInvoiceForTable()" class="flex-[2] rounded-2xl bg-emerald-600 py-4 text-xs font-black uppercase tracking-widest text-white transition hover:bg-emerald-700">Generar factura</button>
+      </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

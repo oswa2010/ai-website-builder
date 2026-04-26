@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-stone-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Perfil - RestoPro Experience</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="h-full font-sans antialiased text-stone-900" 
+      x-data="{ 
+        user: null,
+        myOrders: [],
+        init() {
+            const current = localStorage.getItem('restopro_current_user');
+            if (!current) {
+                window.location.href = '/login.html';
+                return;
+            }
+            this.user = JSON.parse(current);
+            
+            // Buscar mis facturas por Cédula/RUC
+            const allInvoices = JSON.parse(localStorage.getItem('restopro_invoices') || '[]');
+            this.myOrders = allInvoices.filter(i => i.customer.ruc === this.user.cedula);
+        },
+        logout() {
+            localStorage.removeItem('restopro_current_user');
+            window.location.href = '/index.html';
+        }
+      }">
+
+  <!-- Navegación Usuario -->
+  <header class="bg-white border-b border-stone-100 py-6 px-8">
+    <div class="container mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="bg-red-600 p-2 rounded-xl text-white">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        </div>
+        <span class="text-xl font-black tracking-tighter uppercase italic">Resto<span class="text-red-600">Pro</span></span>
+      </div>
+      <button @click="logout()" class="text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-red-600 transition">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <main class="py-20 px-8">
+    <div class="container mx-auto max-w-5xl">
+        <!-- Header Perfil -->
+        <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+            <div>
+                <span class="text-[10px] font-black uppercase tracking-[0.4em] text-red-600 mb-4 block">Área de Miembro</span>
+                <h1 class="text-5xl font-black tracking-tighter uppercase italic" x-text="`Hola, ${user?.nombre}`"></h1>
+                <p class="text-stone-400 font-medium mt-2" x-text="`Cédula: ${user?.cedula} • ${user?.email}`"></p>
+            </div>
+            <a href="/index.html#menu" class="btn-primary">Hacer Nuevo Pedido</a>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <!-- Columna Izquierda: Info -->
+            <div class="lg:col-span-1 space-y-8">
+                <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-stone-100">
+                    <h3 class="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-6">Puntos RestoPro</h3>
+                    <div class="flex items-center gap-4">
+                        <div class="h-12 w-12 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 font-black">★</div>
+                        <div>
+                            <p class="text-3xl font-black text-stone-950" x-text="myOrders.length * 10"></p>
+                            <p class="text-[9px] font-bold text-stone-400 uppercase">Puntos acumulados</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-stone-950 p-8 rounded-[2.5rem] shadow-2xl text-white">
+                    <h3 class="text-[10px] font-black uppercase tracking-widest text-stone-500 mb-4">Total Gastado</h3>
+                    <p class="text-4xl font-black tracking-tighter" x-text="`$ ${myOrders.reduce((sum, o) => sum + o.total, 0).toFixed(2)}`"></p>
+                    <p class="text-[9px] font-bold text-stone-500 uppercase mt-4">Inversión en experiencias</p>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Historial -->
+            <div class="lg:col-span-2">
+                <h3 class="text-sm font-black uppercase tracking-widest text-stone-900 mb-8 italic">Mis Pedidos Recientes</h3>
+                
+                <div class="space-y-4">
+                    <template x-for="order in myOrders" :key="order.ref">
+                        <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-stone-100 hover:shadow-md transition-all group">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <p class="text-[10px] font-black text-red-600 uppercase tracking-widest" x-text="order.ref"></p>
+                                    <p class="text-xs font-bold text-stone-400" x-text="order.date"></p>
+                                </div>
+                                <span class="text-xl font-black text-stone-900" x-text="`$ ${order.total.toFixed(2)}`"></span>
+                            </div>
+                            <div class="flex gap-2 flex-wrap">
+                                <template x-for="item in order.items">
+                                    <span class="text-[9px] font-bold bg-stone-50 text-stone-500 px-3 py-1 rounded-full uppercase" x-text="`${item.qty}x ${item.name}`"></span>
+                                </template>
+                            </div>
+                            <button class="mt-6 text-[9px] font-black uppercase tracking-widest text-stone-300 group-hover:text-red-600 transition-colors">Descargar Factura PDF</button>
+                        </div>
+                    </template>
+
+                    <div x-show="myOrders.length === 0" class="py-20 text-center bg-white rounded-[3rem] border-2 border-dashed border-stone-100">
+                        <p class="text-stone-300 font-black uppercase text-xs tracking-widest">Aún no has realizado pedidos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </main>
+
+</body>
+</html>

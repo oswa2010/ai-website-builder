@@ -1,0 +1,40 @@
+AI WEBSITE BUILDER - QUICK REFERENCE
+====================================
+
+STARTING YOUR WEBSITE:
+1. Open two terminal windows
+2. Terminal 1: npm run dev (preview server)
+3. Terminal 2: Start your AI assistant (see below)
+
+AI COMMANDS:
+- npx claude   # Claude Code by Anthropic
+- npx codex    # OpenAI Codex CLI
+- npx gemini   # Gemini CLI by Google
+
+HELPFUL TERMINAL COMMANDS:
+- cd folder-name   # Go into a folder
+- cd ..           # Go back up one folder
+- ls              # See files (Mac/Linux)
+- dir             # See files (Windows)
+- pwd             # See where you are
+- Ctrl+C (or Command+C on Mac)  # Stop something running
+
+COMMON REQUESTS TO YOUR AI:
+- "Help me understand this project"
+- "Change the business name to [Your Business]"
+- "Make the colors match my brand"
+- "Add photos from my images folder"
+- "I want to publish my website"
+
+PUBLISHING YOUR WEBSITE:
+Just tell your AI: "I want to publish my website"
+They'll handle everything!
+
+CREATE ANOTHER WEBSITE:
+cd ..
+git clone https://github.com/builtbyV/ai-website-builder.git another-site
+cd another-site
+bash setup.sh
+
+NEED HELP?
+Just ask your AI assistant - they're here to help!

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-stone-950 text-white">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>POS Elite - Terminal de Ventas</title>
+  <link rel="stylesheet" href="/src/main.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .custom-scroll::-webkit-scrollbar { width: 4px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    /* Ajuste para evitar que el scroll del body interfiera en mobile */
+    body { position: fixed; width: 100%; height: 100%; overflow: hidden; }
+  </style>
+</head>
+<body class="h-full font-sans antialiased overflow-hidden" x-data="{
+    activeCat: 'Comida',
+    cart: [],
+    showPayment: false,
+    taxRate: 0.18,
+    customer: { ruc: '', nombre: '', telf: '', email: '' },
+    customerSearch: '',
+    savedCustomers: [],
+    showResults: false,
+    invoiceNumber: '001-000' + Math.floor(Math.random() * 9000 + 1000),
+
+    init() {
+        const data = localStorage.getItem('restopro_reservations');
+        if (data) { this.savedCustomers = JSON.parse(data); }
+    },
+
+    get filteredCustomers() {
+        if (!this.customerSearch.trim()) return [];
+        return this.savedCustomers.filter(c => 
+            c.cedula.includes(this.customerSearch) || 
+            (c.nombre + ' ' + c.apellidos).toLowerCase().includes(this.customerSearch.toLowerCase())
+        );
+    },
+
+    selectCustomer(c) {
+        this.customer = { ruc: c.cedula, nombre: c.nombre + ' ' + c.apellidos, telf: c.telefono, email: c.email };
+        this.customerSearch = ''; this.showResults = false;
+    },
+
+    // 15 ARTÍCULOS DISTRIBUIDOS
+    menuItems: [
+        // COMIDA (5)
+        { id: 1, name: 'Lomo Saltado Premium', price: 35.00, cat: 'Comida', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400' },
+        { id: 2, name: 'Ceviche Pro Especial', price: 42.00, cat: 'Comida', img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400' },
+        { id: 3, name: 'Pizza Napolitana', price: 18.00, cat: 'Comida', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400' },
+        { id: 4, name: 'Burger La Jefa', price: 16.50, cat: 'Comida', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400' },
+        { id: 5, name: 'Pasta Carbonara', price: 22.00, cat: 'Comida', img: 'https://images.unsplash.com/photo-1612874742237-6526221588e3?w=400' },
+
+        // BEBIDAS (5)
+        { id: 10, name: 'Pisco Sour Clásico', price: 25.00, cat: 'Bebidas', img: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400' },
+        { id: 11, name: 'Cerveza Artesana', price: 12.00, cat: 'Bebidas', img: 'https://images.unsplash.com/photo-1532635241-17e820acc59f?w=400' },
+        { id: 12, name: 'Vino Tinto Copa', price: 15.00, cat: 'Bebidas', img: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400' },
+        { id: 13, name: 'Jugo de Naranja', price: 8.00, cat: 'Bebidas', img: 'https://images.unsplash.com/photo-1557800636-894a64c1696f?w=400' },
+        { id: 14, name: 'Agua Mineral Premium', price: 5.00, cat: 'Bebidas', img: 'https://images.unsplash.com/photo-1559839914-17aae19cea71?w=400' },
+
+        // POSTRES (5)
+        { id: 20, name: 'Tarta de Queso', price: 15.00, cat: 'Postres', img: 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=400' },
+        { id: 21, name: 'Suspiro Limeño Pro', price: 14.00, cat: 'Postres', img: 'https://images.unsplash.com/photo-1511911063855-2bf39afa5b2e?w=400' },
+        { id: 22, name: 'Tiramisú Clásico', price: 16.00, cat: 'Postres', img: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400' },
+        { id: 23, name: 'Brownie Supremo', price: 18.00, cat: 'Postres', img: 'https://images.unsplash.com/photo-1564355808539-22fda35bed7e?w=400' },
+        { id: 24, name: 'Bowl de Frutas', price: 12.00, cat: 'Postres', img: 'https://images.unsplash.com/photo-1519996529931-28324d5a630e?w=400' }
+    ],
+
+    addToCart(item) {
+        let exist = this.cart.find(i => i.id === item.id);
+        if (exist) { exist.qty++; } else { this.cart.push({ ...item, qty: 1 }); }
+    },
+    get subtotal() { return this.total / (1 + this.taxRate); },
+    get tax() { return this.total - this.subtotal; },
+    get total() { return this.cart.reduce((sum, i) => sum + (i.price * i.qty), 0); },
+
+    emitInvoice() {
+        if(!this.customer.ruc || !this.customer.nombre) return alert('Por favor complete datos del cliente');
+        alert('FACTURA N° ' + this.invoiceNumber + ' EMITIDA CORRECTAMENTE');
+        this.cart = []; this.showPayment = false;
+        this.customer = { ruc: '', nombre: '', telf: '', email: '' };
+        this.invoiceNumber = '001-000' + Math.floor(Math.random() * 9000 + 1000);
+    }
+}">
+
+  <div class="flex h-full no-print">
+    <!-- Main Terminal Area -->
+    <main class="flex-1 flex flex-col p-6 bg-stone-950 overflow-hidden">
+        <header class="flex justify-between items-center mb-6 shrink-0">
+            <h1 class="text-2xl font-black uppercase italic text-white tracking-tighter">RESTOPRO <span class="text-red-600">POS</span></h1>
+            
+            <!-- CATEGORÍAS ADAPTADAS -->
+            <div class="flex bg-stone-900 p-1.5 rounded-2xl border border-stone-800 shadow-2xl">
+                <template x-for="cat in ['Comida', 'Bebidas', 'Postres']">
+                    <button @click="activeCat = cat" 
+                            :class="activeCat === cat ? 'bg-red-600 text-white shadow-lg' : 'text-stone-500'" 
+                            class="px-8 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-300" 
+                            x-text="cat"></button>
+                </template>
+            </div>
+        </header>
+
+        <!-- GRID DE ARTÍCULOS DINÁMICO -->
+        <div class="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 custom-scroll pr-2">
+            <template x-for="item in menuItems.filter(i => i.cat === activeCat)" :key="item.id">
+                <div @click="addToCart(item)" class="bg-stone-900 rounded-[2.5rem] p-4 border border-stone-800 cursor-pointer hover:border-red-600 transition-all active:scale-95 group shadow-xl">
+                    <div class="relative overflow-hidden rounded-3xl mb-4 h-40 shadow-2xl">
+                        <img :src="item.img" class="h-full w-full object-cover group-hover:scale-110 transition duration-1000">
+                    </div>
+                    <p class="text-[11px] font-black uppercase tracking-tight text-stone-200 mb-1" x-text="item.name"></p>
+                    <p class="text-lg font-black text-red-600" x-text="`$ ${item.price.toFixed(2)}`"></p>
+                </div>
+            </template>
+        </div>
+
+        <div class="mt-6 pt-6 border-t border-stone-800 shrink-0">
+            <a href="/dashboard.html" class="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-stone-500 hover:text-white transition">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Regresar
+            </a>
+        </div>
+    </main>
+
+    <!-- Sidebar Cart -->
+    <aside class="w-[450px] bg-white text-stone-900 flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.5)] z-10 overflow-hidden">
+        <div class="p-8 border-b border-stone-100 shrink-0"><h2 class="text-xl font-black uppercase tracking-tighter italic">Detalle Comanda</h2></div>
+        
+        <div class="flex-1 overflow-y-auto p-8 space-y-6 custom-scroll">
+            <template x-for="item in cart" :key="item.id">
+                <div class="flex justify-between items-center border-b border-stone-50 pb-4">
+                    <div class="flex items-center gap-4">
+                        <span class="h-10 w-10 bg-red-50 text-red-600 flex items-center justify-center rounded-xl font-black text-xs" x-text="item.qty"></span>
+                        <div>
+                            <p class="text-xs font-black uppercase text-stone-900" x-text="item.name"></p>
+                            <p class="text-[10px] font-bold text-stone-400" x-text="`$ ${item.price.toFixed(2)} c/u`"></p>
+                        </div>
+                    </div>
+                    <p class="text-sm font-black text-stone-900" x-text="`$ ${(item.price * item.qty).toFixed(2)}`"></p>
+                </div>
+            </template>
+        </div>
+
+        <div class="p-10 bg-stone-950 rounded-t-[4rem] shadow-2xl shrink-0">
+            <div class="flex justify-between items-center mb-6 text-white"><span class="text-[10px] font-black uppercase opacity-50">Total</span><span class="text-4xl font-black" x-text="`$ ${total.toFixed(2)}`"></span></div>
+            <button @click="if(cart.length > 0) showPayment = true" class="w-full bg-red-600 text-white py-6 rounded-3xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-red-500 transition-all">Generar Factura USD</button>
+        </div>
+    </aside>
+  </div>
+
+  <!-- Modal Facturación Avanzada -->
+  <div x-show="showPayment" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/98 backdrop-blur-2xl no-print" x-cloak>
+    <div class="bg-white rounded-[4rem] w-full max-w-6xl flex h-[90vh] overflow-hidden shadow-2xl border border-white/20">
+        
+        <!-- Buscador y Datos -->
+        <div class="w-1/2 p-14 overflow-y-auto custom-scroll border-r border-stone-100 text-stone-900 relative">
+            <div class="mb-10 text-center border-b pb-6 border-stone-100">
+                <h3 class="text-4xl font-black uppercase italic tracking-tighter mb-2">FACTURA N°</h3>
+                <p class="text-red-600 text-3xl font-black tracking-widest" x-text="invoiceNumber"></p>
+            </div>
+            
+            <div class="mb-12 relative">
+                <label class="text-[10px] font-black uppercase text-stone-400 mb-3 block tracking-widest">Buscador Inteligente (Cédula / Nombre / Apellido)</label>
+                <input type="text" x-model="customerSearch" @input="showResults = true" placeholder="Buscar cliente..." 
+                       class="w-full bg-stone-100 border-none rounded-2xl p-5 font-bold text-stone-900 focus:ring-2 focus:ring-red-600 transition outline-none">
+                
+                <!-- Resultados del Buscador -->
+                <div x-show="showResults && filteredCustomers.length > 0" class="absolute w-full mt-2 bg-white border border-stone-100 rounded-3xl shadow-2xl z-50 overflow-hidden" @click.away="showResults = false">
+                    <template x-for="c in filteredCustomers" :key="c.cedula">
+                        <div @click="selectCustomer(c)" class="p-5 hover:bg-stone-50 cursor-pointer border-b border-stone-50 transition">
+                            <p class="text-sm font-black uppercase text-stone-900" x-text="`${c.nombre} ${c.apellidos}`"></p>
+                            <p class="text-[10px] font-bold text-red-600 mt-1" x-text="`Cédula: ${c.cedula}`"></p>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" x-model="customer.ruc" placeholder="RUC / DNI" class="bg-stone-50 border-none rounded-2xl p-5 font-black text-stone-900">
+                    <input type="text" x-model="customer.nombre" placeholder="Nombre / Empresa" class="bg-stone-50 border-none rounded-2xl p-5 font-bold text-stone-900">
+                </div>
+                <input type="email" x-model="customer.email" placeholder="Email del Cliente" class="w-full bg-stone-50 border-none rounded-2xl p-5 font-bold">
+            </div>
+
+            <div class="mt-14 flex gap-4">
+                <button @click="showPayment = false" class="flex-1 py-6 bg-stone-100 text-stone-400 font-black text-[10px] uppercase rounded-3xl">Atrás</button>
+                <button @click="emitInvoice()" class="flex-[2] py-6 bg-stone-950 text-white rounded-3xl font-black text-[10px] uppercase shadow-xl hover:bg-red-600 transition-all tracking-widest">Emitir Factura</button>
+            </div>
+        </div>
+
+        <!-- Ticket Preview -->
+        <div class="w-1/2 p-12 bg-stone-50 flex items-center justify-center overflow-y-auto">
+            <div class="print-area w-full max-w-sm bg-white p-12 shadow-2xl border border-stone-200 font-mono text-stone-900 text-[10px] rounded-xl relative">
+                <div class="text-center mb-10 border-b-2 border-stone-900 pb-10 uppercase">
+                    <p class="text-2xl font-black italic">RestoPro Elite</p>
+                    <p class="mt-2 font-black text-xs text-red-600">FACTURA N° <span x-text="invoiceNumber"></span></p>
+                </div>
+                <div class="space-y-4 mb-10">
+                    <template x-for="item in cart">
+                        <div class="flex justify-between border-b border-stone-50 pb-2">
+                            <span x-text="`${item.qty}x ${item.name}`"></span>
+                            <span class="font-black" x-text="`$ ${(item.price * item.qty).toFixed(2)}`"></span>
+                        </div>
+                    </template>
+                </div>
+                <div class="border-t-2 border-stone-900 pt-6">
+                    <div class="flex justify-between opacity-50 text-[9px] font-black"><span>SUBTOTAL</span><span x-text="`$ ${subtotal.toFixed(2)}`"></span></div>
+                    <div class="flex justify-between opacity-50 text-[9px] font-black"><span>IVA (18%)</span><span x-text="`$ ${tax.toFixed(2)}`"></span></div>
+                    <div class="flex justify-between text-2xl font-black pt-4"><span>TOTAL</span><span x-text="`$ ${total.toFixed(2)}`"></span></div>
+                </div>
+                <p class="mt-14 text-center opacity-30 font-black uppercase text-[7px] tracking-[0.3em]">Precisión USD • RestoPro OS</p>
+            </div>
+        </div>
+    </div>
+  </div>
+
+</body>
+</html>

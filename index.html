@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RestoPro | Experiencia gastronómica y reservas</title>
+  <meta name="description" content="Descubre la carta de RestoPro, reserva tu mesa y disfruta una experiencia gastronómica contemporánea con postres artesanales y atención ágil.">
+  <meta property="og:url" content="https://restopro.vercel.app/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="RestoPro | Experiencia gastronómica y reservas">
+  <meta property="og:description" content="Una propuesta gastronómica moderna con carta estacional, reservas simples y postres artesanales de primer nivel.">
+  <meta property="og:image" content="/images/desserts/tiramisu-copa.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/main.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+
+    /* Mesh gradient background */
+    .hero-bg {
+      background:
+        radial-gradient(ellipse 80% 60% at 10% -10%, rgba(230,57,70,0.20) 0%, transparent 55%),
+        radial-gradient(ellipse 60% 40% at 90% 110%, rgba(244,162,97,0.08) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 80% at 50% 50%, rgba(230,57,70,0.04) 0%, transparent 70%),
+        linear-gradient(180deg, #0F0F13 0%, #08080A 100%);
+    }
+
+    /* Noise texture overlay */
+    .noise::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* Grid lines background */
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 64px 64px;
+    }
+
+    /* Animated blob */
+    .blob {
+      border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+      animation: blob-move 8s ease-in-out infinite;
+    }
+
+    /* Glow line */
+    .glow-line {
+      background: linear-gradient(90deg, transparent, rgba(230,57,70,0.6), transparent);
+      height: 1px;
+    }
+
+    /* Image card hover */
+    .img-card { overflow: hidden; }
+    .img-card img { transition: transform 0.5s ease; }
+    .img-card:hover img { transform: scale(1.04); }
+
+    /* Bento card */
+    .bento-card {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border-1);
+      border-radius: 1.5rem;
+      transition: all 0.3s ease;
+    }
+    .bento-card:hover {
+      border-color: rgba(255,255,255,0.14);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    }
+
+    /* Nav link active state */
+    .nav-link {
+      position: relative;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #9090A8;
+      transition: color 0.2s;
+    }
+    .nav-link:hover { color: #F4F4FA; }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #E63946;
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+    .nav-link:hover::after { width: 100%; }
+
+    /* Reservation success */
+    .reservation-success {
+      animation: fadeUp 0.4s ease forwards;
+    }
+
+    /* Scrolled header */
+    .header-scrolled {
+      background: rgba(8,8,10,0.95) !important;
+      border-bottom-color: rgba(255,255,255,0.08) !important;
+    }
+  </style>
+</head>
+
+<body class="noise" x-data="{
+  reservationForm: { nombre: '', telefono: '', fecha: '', hora: '20:00', pax: '2', notas: '' },
+  reservationSent: false,
+  mobileMenuOpen: false,
+  saveReservation() {
+    if (!this.reservationForm.nombre || !this.reservationForm.telefono || !this.reservationForm.fecha) {
+      alert('Por favor completa nombre, teléfono y fecha para continuar.');
+      return;
+    }
+    const saved = JSON.parse(localStorage.getItem('restopro_reservations') || '[]');
+    const parts = this.reservationForm.nombre.trim().split(/\s+/);
+    const nombre = parts.shift() || this.reservationForm.nombre.trim();
+    const apellidos = parts.join(' ');
+    const paxNum = parseInt(this.reservationForm.pax, 10) || 2;
+    const date = new Date(this.reservationForm.fecha);
+    const dateLabel = Number.isNaN(date.getTime())
+      ? this.reservationForm.fecha
+      : date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    saved.unshift({
+      id: Date.now(),
+      cedula: `WEB-${Date.now().toString().slice(-6)}`,
+      nombre,
+      apellidos,
+      telefono: this.reservationForm.telefono,
+      email: '',
+      pax: paxNum,
+      time: this.reservationForm.hora || '20:00',
+      table: 'Pendiente',
+      status: 'Nueva',
+      order: this.reservationForm.notas?.trim() || 'Reserva web',
+      source: 'web',
+      reservationDate: dateLabel
+    });
+    localStorage.setItem('restopro_reservations', JSON.stringify(saved));
+    this.reservationForm = { nombre: '', telefono: '', fecha: '', hora: '20:00', pax: '2', notas: '' };
+    this.reservationSent = true;
+    setTimeout(() => { this.reservationSent = false; }, 4000);
+  }
+}">
+
+  <!-- ===================== HEADER ===================== -->
+  <header
+    id="site-header"
+    class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+    style="background: rgba(8,8,10,0.7); backdrop-filter: blur(24px); border-bottom: 1px solid rgba(255,255,255,0.06);"
+    x-data="{ scrolled: false }"
+    @scroll.window="scrolled = window.scrollY > 40"
+    :class="scrolled ? 'header-scrolled' : ''"
+  >
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
+
+      <!-- Logo -->
+      <a href="#inicio" class="flex items-center gap-3 shrink-0">
+        <div class="relative flex h-10 w-10 items-center justify-center rounded-xl"
+             style="background: linear-gradient(135deg, #E63946 0%, #C41E3A 100%); box-shadow: 0 4px 16px rgba(230,57,70,0.4);">
+          <span class="text-base font-black text-white tracking-tight">R</span>
+        </div>
+        <div class="hidden sm:block">
+          <p class="text-sm font-black uppercase tracking-[0.18em] text-white leading-none">RestoPro</p>
+          <p class="text-[10px] uppercase tracking-[0.3em] mt-0.5" style="color: #5A5A70;">Cocina de autor</p>
+        </div>
+      </a>
+
+      <!-- Desktop nav -->
+      <nav class="hidden items-center gap-7 md:flex">
+        <a href="/carta-cliente.html" class="nav-link">Carta</a>
+        <a href="#menu" class="nav-link">Menú</a>
+        <a href="#experiencia" class="nav-link">Experiencia</a>
+        <a href="#postres" class="nav-link">Postres</a>
+        <a href="#reservas" class="nav-link">Reservas</a>
+      </nav>
+
+      <!-- CTAs -->
+      <div class="flex items-center gap-2.5">
+        <a href="/login.html"
+           class="hidden sm:inline-flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-semibold transition-all duration-200"
+           style="border-color: rgba(255,255,255,0.12); color: #9090A8; background: rgba(255,255,255,0.03);"
+           onmouseover="this.style.borderColor='rgba(255,255,255,0.22)'; this.style.color='#F4F4FA';"
+           onmouseout="this.style.borderColor='rgba(255,255,255,0.12)'; this.style.color='#9090A8';">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Dashboard
+        </a>
+        <a href="#reservas" class="btn btn-primary btn-sm">
+          Reservar mesa
+        </a>
+        <!-- Mobile menu toggle -->
+        <button @click="mobileMenuOpen = !mobileMenuOpen"
+                class="ml-1 flex h-9 w-9 items-center justify-center rounded-lg md:hidden"
+                style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);">
+          <svg x-show="!mobileMenuOpen" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          <svg x-show="mobileMenuOpen" x-cloak width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div x-show="mobileMenuOpen" x-cloak x-transition
+         class="border-t md:hidden"
+         style="border-color: rgba(255,255,255,0.06); background: rgba(8,8,10,0.98);">
+      <nav class="flex flex-col gap-1 px-5 py-4">
+        <a href="/carta-cliente.html" @click="mobileMenuOpen=false" class="rounded-lg px-4 py-3 text-sm font-medium transition" style="color: #9090A8;" onmouseover="this.style.color='#F4F4FA'" onmouseout="this.style.color='#9090A8'">Carta cliente</a>
+        <a href="#menu"        @click="mobileMenuOpen=false" class="rounded-lg px-4 py-3 text-sm font-medium transition" style="color: #9090A8;" onmouseover="this.style.color='#F4F4FA'" onmouseout="this.style.color='#9090A8'">Menú</a>
+        <a href="#experiencia" @click="mobileMenuOpen=false" class="rounded-lg px-4 py-3 text-sm font-medium transition" style="color: #9090A8;" onmouseover="this.style.color='#F4F4FA'" onmouseout="this.style.color='#9090A8'">Experiencia</a>
+        <a href="#postres"     @click="mobileMenuOpen=false" class="rounded-lg px-4 py-3 text-sm font-medium transition" style="color: #9090A8;" onmouseover="this.style.color='#F4F4FA'" onmouseout="this.style.color='#9090A8'">Postres</a>
+        <a href="#reservas"    @click="mobileMenuOpen=false" class="rounded-lg px-4 py-3 text-sm font-medium transition" style="color: #9090A8;" onmouseover="this.style.color='#F4F4FA'" onmouseout="this.style.color='#9090A8'">Reservas</a>
+        <div class="mt-2 pt-2" style="border-top: 1px solid rgba(255,255,255,0.06);">
+          <a href="/login.html" class="block rounded-lg px-4 py-3 text-sm font-medium" style="color: #9090A8;">Acceso Dashboard</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- =================== HERO =================== -->
+    <section id="inicio" class="hero-bg grid-bg relative overflow-hidden pt-32 pb-20 sm:pt-40 sm:pb-28">
+
+      <!-- Decorative blobs -->
+      <div class="blob pointer-events-none absolute -top-40 -left-40 h-96 w-96 opacity-20"
+           style="background: radial-gradient(circle, rgba(230,57,70,0.6) 0%, transparent 70%);"></div>
+      <div class="blob pointer-events-none absolute -bottom-20 -right-20 h-80 w-80 opacity-10"
+           style="background: radial-gradient(circle, rgba(244,162,97,0.5) 0%, transparent 70%); animation-delay: 4s;"></div>
+
+      <div class="relative z-10 mx-auto max-w-7xl px-5 lg:px-8">
+        <div class="grid gap-14 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+
+          <!-- Left: Copy -->
+          <div>
+            <!-- Badge -->
+            <div class="badge badge-brand animate-fade-up">
+              <span style="width:6px; height:6px; border-radius:50%; background:#E63946; display:inline-block; animation: pulse-glow 2s ease infinite;"></span>
+              Restaurante contemporáneo · 2026
+            </div>
+
+            <!-- Headline -->
+            <h1 class="mt-6 text-5xl font-black leading-[1.04] tracking-[-0.03em] sm:text-6xl lg:text-7xl animate-fade-up delay-100">
+              <span class="gradient-text">Gastronomía</span><br>
+              que se siente<br>
+              <span class="gradient-text-brand">premium</span><br>
+              desde el primer plato.
+            </h1>
+
+            <!-- Subheading -->
+            <p class="mt-6 max-w-xl text-[1.0625rem] leading-relaxed animate-fade-up delay-200" style="color: #9090A8;">
+              Carta estacional cuidadosamente seleccionada, servicio ágil y una experiencia de reserva en menos de un minuto. Todo lo que un restaurante moderno necesita.
+            </p>
+
+            <!-- CTAs -->
+            <div class="mt-8 flex flex-wrap gap-3 animate-fade-up delay-300">
+              <a href="#reservas" class="btn btn-primary btn-lg">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"/></svg>
+                Reservar mesa
+              </a>
+              <a href="/carta-cliente.html" class="btn btn-ghost btn-lg">
+                Ver carta completa
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+            </div>
+
+            <!-- Stats -->
+            <div class="mt-10 grid grid-cols-3 gap-3 animate-fade-up delay-400">
+              <div class="stat-card text-center">
+                <div class="stat-card-value" style="color: #E63946;">+8</div>
+                <div class="stat-card-label">Años<br>de cocina</div>
+              </div>
+              <div class="stat-card text-center">
+                <div class="stat-card-value">42</div>
+                <div class="stat-card-label">Platos en<br>carta</div>
+              </div>
+              <div class="stat-card text-center">
+                <div class="stat-card-value">★ 4.9</div>
+                <div class="stat-card-label">Valoración<br>media</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Visual cards -->
+          <div class="grid grid-cols-2 gap-3 animate-fade-up delay-200">
+
+            <!-- Main image card -->
+            <div class="img-card col-span-2 overflow-hidden rounded-2xl" style="border: 1px solid rgba(255,255,255,0.08); height: 260px;">
+              <img src="/images/desserts/tiramisu-copa.jpg"
+                   alt="Copa de tiramisú artesanal"
+                   class="h-full w-full object-cover">
+              <div class="absolute inset-0 rounded-2xl" style="background: linear-gradient(to top, rgba(8,8,10,0.8) 0%, transparent 50%); pointer-events: none;"></div>
+            </div>
+
+            <!-- Schedule card -->
+            <div class="bento-card p-5 animate-float">
+              <div class="text-xs uppercase tracking-widest mb-2" style="color: #E63946; font-weight: 700;">Horario</div>
+              <div class="text-base font-black leading-tight" style="color: #F4F4FA;">Mar — Dom</div>
+              <div class="mt-1 text-sm" style="color: #5A5A70;">13:00–16:00<br>19:30–23:30</div>
+            </div>
+
+            <!-- Feature card -->
+            <div class="bento-card p-5" style="background: linear-gradient(135deg, rgba(230,57,70,0.15) 0%, rgba(230,57,70,0.05) 100%); border-color: rgba(230,57,70,0.2);">
+              <div class="text-xs uppercase tracking-widest mb-2" style="color: #E63946; font-weight: 700;">Reservas</div>
+              <div class="text-2xl font-black" style="color: #F4F4FA;">1 min</div>
+              <div class="mt-1 text-sm" style="color: #9090A8;">Mesa garantizada en tiempo récord</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scroll indicator -->
+        <div class="mt-16 flex justify-center animate-fade-in delay-500">
+          <a href="#menu" class="flex flex-col items-center gap-2 opacity-50 hover:opacity-100 transition-opacity">
+            <span class="text-[11px] uppercase tracking-widest" style="color: #5A5A70;">Explorar</span>
+            <svg class="animate-bounce" width="16" height="16" fill="none" stroke="#5A5A70" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Glow divider -->
+    <div class="glow-line w-full"></div>
+
+    <!-- =================== MENÚ DESTACADO =================== -->
+    <section id="menu" class="relative py-24 sm:py-32" style="background: #0F0F13;">
+      <div class="mx-auto max-w-7xl px-5 lg:px-8">
+
+        <!-- Section header -->
+        <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between mb-14">
+          <div>
+            <div class="section-label mb-3">Carta destacada</div>
+            <h2 class="text-4xl font-black tracking-tight sm:text-5xl gradient-text">
+              Platos que cuentan<br>una historia.
+            </h2>
+          </div>
+          <a href="/carta-cliente.html" class="btn btn-outline shrink-0">
+            Ver carta completa
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+
+        <!-- Bento grid menu -->
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+
+          <!-- Featured dish -->
+          <div class="bento-card md:col-span-2 md:row-span-2 flex flex-col justify-between p-8 min-h-72"
+               style="background: linear-gradient(135deg, rgba(230,57,70,0.1) 0%, rgba(8,8,10,0.8) 60%);">
+            <div>
+              <div class="badge badge-brand mb-4">Chef recomienda</div>
+              <h3 class="text-3xl font-black leading-tight gradient-text">Lomo glaseado<br>al vino tinto</h3>
+              <p class="mt-3 text-base leading-relaxed" style="color: #9090A8;">
+                Corte premium de lomo ibérico con reducción de vino tinto, puré de raíces y vinagreta de trufa negra. La cumbre de nuestra propuesta gastronómica.
+              </p>
+            </div>
+            <div class="mt-6 flex items-center justify-between">
+              <div class="flex items-baseline gap-1">
+                <span class="text-3xl font-black" style="color: #F4F4FA;">$28.00</span>
+                <span class="text-sm" style="color: #5A5A70;">/ración</span>
+              </div>
+              <a href="#reservas" class="btn btn-primary btn-sm">Reservar ahora</a>
+            </div>
+          </div>
+
+          <!-- Side dishes -->
+          <div class="bento-card p-6">
+            <div class="section-label text-[10px] mb-3" style="font-size: 0.625rem;">Entrante</div>
+            <h3 class="text-xl font-black gradient-text mb-2">Burrata con<br>tomates confitados</h3>
+            <p class="text-sm leading-relaxed mb-4" style="color: #9090A8;">Frescura italiana con aceite de albahaca y sal ahumada.</p>
+            <span class="text-lg font-black" style="color: #F4F4FA;">$14.90</span>
+          </div>
+
+          <div class="bento-card p-6">
+            <div class="section-label text-[10px] mb-3" style="font-size: 0.625rem;">Principal</div>
+            <h3 class="text-xl font-black gradient-text mb-2">Risotto de setas<br>y parmesano</h3>
+            <p class="text-sm leading-relaxed mb-4" style="color: #9090A8;">Cremoso, intenso y con el umami perfecto del parmesano añejo.</p>
+            <span class="text-lg font-black" style="color: #F4F4FA;">$22.50</span>
+          </div>
+
+          <!-- Three small cards -->
+          <div class="bento-card p-6 md:col-span-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div class="flex items-center gap-4">
+              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" style="background: rgba(230,57,70,0.15);">
+                <svg width="20" height="20" fill="none" stroke="#E63946" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v6l4 2"/></svg>
+              </div>
+              <div>
+                <p class="font-semibold text-sm" style="color: #F4F4FA;">Servicio rápido</p>
+                <p class="text-xs mt-0.5" style="color: #5A5A70;">Platos listos en 20 min</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" style="background: rgba(244,162,97,0.12);">
+                <svg width="20" height="20" fill="none" stroke="#F4A261" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <div>
+                <p class="font-semibold text-sm" style="color: #F4F4FA;">Ingredientes locales</p>
+                <p class="text-xs mt-0.5" style="color: #5A5A70;">Km 0 y producción propia</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" style="background: rgba(255,255,255,0.05);">
+                <svg width="20" height="20" fill="none" stroke="#9090A8" stroke-width="2" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+              </div>
+              <div>
+                <p class="font-semibold text-sm" style="color: #F4F4FA;">Carta estacional</p>
+                <p class="text-xs mt-0.5" style="color: #5A5A70;">Actualizada cada temporada</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================== EXPERIENCIA =================== -->
+    <section id="experiencia" class="relative py-24 sm:py-32 overflow-hidden"
+             style="background: linear-gradient(180deg, #0F0F13 0%, #08080A 100%);">
+
+      <!-- Background glow -->
+      <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full opacity-5"
+           style="background: radial-gradient(circle, #E63946 0%, transparent 70%);"></div>
+
+      <div class="relative z-10 mx-auto max-w-7xl px-5 lg:px-8">
+        <div class="grid gap-14 lg:grid-cols-2 lg:items-center">
+
+          <!-- Left: headline -->
+          <div>
+            <div class="section-label mb-3">La experiencia</div>
+            <h2 class="text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl gradient-text leading-[1.04]">
+              Cada visita,<br>un recuerdo<br>que perdura.
+            </h2>
+            <p class="mt-6 text-base leading-relaxed max-w-md" style="color: #9090A8;">
+              Diseñamos cada detalle del servicio para que la experiencia sea tan memorable como los platos. Desde la bienvenida hasta el postre.
+            </p>
+            <div class="mt-8 flex flex-wrap gap-3">
+              <a href="#reservas" class="btn btn-primary">Reservar ahora</a>
+              <a href="#postres" class="btn btn-ghost">Ver postres</a>
+            </div>
+
+            <!-- Social proof -->
+            <div class="mt-10 flex items-center gap-4">
+              <div class="flex -space-x-2">
+                <div class="h-9 w-9 rounded-full border-2 flex items-center justify-center text-xs font-black" style="border-color: #0F0F13; background: linear-gradient(135deg, #E63946, #C41E3A); color: white;">M</div>
+                <div class="h-9 w-9 rounded-full border-2 flex items-center justify-center text-xs font-black" style="border-color: #0F0F13; background: linear-gradient(135deg, #F4A261, #E07B3A); color: white;">A</div>
+                <div class="h-9 w-9 rounded-full border-2 flex items-center justify-center text-xs font-black" style="border-color: #0F0F13; background: linear-gradient(135deg, #7C3AED, #5B21B6); color: white;">R</div>
+                <div class="h-9 w-9 rounded-full border-2 flex items-center justify-center text-xs font-black" style="border-color: #0F0F13; background: rgba(255,255,255,0.1); color: #9090A8;">+</div>
+              </div>
+              <div>
+                <p class="text-sm font-semibold" style="color: #F4F4FA;">+2.400 comensales satisfechos</p>
+                <p class="text-xs" style="color: #5A5A70;">Este año · valoración media 4.9★</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: feature list -->
+          <div class="grid gap-3">
+            <div class="bento-card p-6 flex gap-4 items-start">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style="background: rgba(230,57,70,0.15);">
+                <svg width="18" height="18" fill="none" stroke="#E63946" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              </div>
+              <div>
+                <h3 class="font-black text-base" style="color: #F4F4FA;">Sala con carácter</h3>
+                <p class="mt-1 text-sm leading-relaxed" style="color: #9090A8;">Interiorismo cálido con materiales naturales y una iluminación que invita a quedarse.</p>
+              </div>
+            </div>
+
+            <div class="bento-card p-6 flex gap-4 items-start">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style="background: rgba(244,162,97,0.12);">
+                <svg width="18" height="18" fill="none" stroke="#F4A261" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <div>
+                <h3 class="font-black text-base" style="color: #F4F4FA;">Atención personalizada</h3>
+                <p class="mt-1 text-sm leading-relaxed" style="color: #9090A8;">El equipo de sala recuerda tus preferencias y adapta el servicio a tu ritmo.</p>
+              </div>
+            </div>
+
+            <div class="bento-card p-6 flex gap-4 items-start">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style="background: rgba(255,255,255,0.05);">
+                <svg width="18" height="18" fill="none" stroke="#9090A8" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <div>
+                <h3 class="font-black text-base" style="color: #F4F4FA;">Calidad garantizada</h3>
+                <p class="mt-1 text-sm leading-relaxed" style="color: #9090A8;">Cada plato pasa control de calidad antes de salir de cocina. Ningún detalle se improvisa.</p>
+              </div>
+            </div>
+
+            <div class="bento-card p-6 flex gap-4 items-start">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style="background: rgba(124,58,237,0.12);">
+                <svg width="18" height="18" fill="none" stroke="#A78BFA" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <div>
+                <h3 class="font-black text-base" style="color: #F4F4FA;">Momentos especiales</h3>
+                <p class="mt-1 text-sm leading-relaxed" style="color: #9090A8;">Cumpleaños, aniversarios o cenas de empresa. Personalizamos cada evento al detalle.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================== POSTRES =================== -->
+    <section id="postres" class="py-24 sm:py-32" style="background: #0F0F13;">
+      <div class="mx-auto max-w-7xl px-5 lg:px-8">
+
+        <!-- Header -->
+        <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between mb-14">
+          <div>
+            <div class="section-label mb-3">Postres artesanales</div>
+            <h2 class="text-4xl font-black tracking-tight sm:text-5xl gradient-text">
+              El final perfecto<br>para cada historia.
+            </h2>
+          </div>
+          <p class="max-w-sm text-base leading-relaxed" style="color: #9090A8;">
+            Elaborados cada día en nuestra pastelería propia con ingredientes de temporada y técnica francesa.
+          </p>
+        </div>
+
+        <!-- Dessert grid -->
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+
+          <!-- Large featured dessert -->
+          <div class="img-card bento-card overflow-hidden md:row-span-2" style="min-height: 480px; position: relative;">
+            <img src="/images/desserts/tiramisu-copa.jpg"
+                 alt="Tiramisú artesanal de la casa"
+                 class="absolute inset-0 h-full w-full object-cover">
+            <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(8,8,10,0.92) 0%, transparent 55%);"></div>
+            <div class="absolute bottom-0 left-0 right-0 p-6">
+              <div class="badge badge-brand mb-2">Postre estrella</div>
+              <h3 class="text-2xl font-black" style="color: #F4F4FA;">Tiramisú de la casa</h3>
+              <p class="mt-2 text-sm" style="color: #9090A8;">Capas suaves, cacao intenso y mascarpone cremoso.</p>
+              <div class="mt-3 flex items-center justify-between">
+                <span class="text-lg font-black" style="color: #F4F4FA;">$9.50</span>
+                <span class="badge badge-neutral">Clásico</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Medium desserts -->
+          <div class="img-card bento-card overflow-hidden" style="min-height: 230px; position: relative;">
+            <img src="/images/desserts/coulant-chocolate.jpg"
+                 alt="Coulant de chocolate"
+                 class="absolute inset-0 h-full w-full object-cover">
+            <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(8,8,10,0.88) 0%, transparent 60%);"></div>
+            <div class="absolute bottom-0 left-0 right-0 p-5">
+              <h3 class="font-black text-lg" style="color: #F4F4FA;">Coulant de chocolate</h3>
+              <div class="mt-1 flex items-center justify-between">
+                <p class="text-sm" style="color: #9090A8;">Interior fundente</p>
+                <span class="text-base font-black" style="color: #F4F4FA;">$10.00</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="img-card bento-card overflow-hidden" style="min-height: 230px; position: relative;">
+            <img src="/images/desserts/cheesecake-frutos-rojos.jpg"
+                 alt="Cheesecake de frutos rojos"
+                 class="absolute inset-0 h-full w-full object-cover">
+            <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(8,8,10,0.88) 0%, transparent 60%);"></div>
+            <div class="absolute bottom-0 left-0 right-0 p-5">
+              <h3 class="font-black text-lg" style="color: #F4F4FA;">Cheesecake de frutos rojos</h3>
+              <div class="mt-1 flex items-center justify-between">
+                <p class="text-sm" style="color: #9090A8;">Temporada de verano</p>
+                <span class="text-base font-black" style="color: #F4F4FA;">$8.50</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom row -->
+          <div class="img-card bento-card overflow-hidden md:col-span-2" style="min-height: 200px; position: relative;">
+            <img src="/images/desserts/milhojas-crema.jpg"
+                 alt="Milhojas de crema"
+                 class="absolute inset-0 h-full w-full object-cover">
+            <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(8,8,10,0.88) 0%, transparent 55%);"></div>
+            <div class="absolute bottom-0 left-0 right-0 p-5 flex items-end justify-between">
+              <div>
+                <h3 class="font-black text-xl" style="color: #F4F4FA;">Milhojas de crema</h3>
+                <p class="text-sm mt-1" style="color: #9090A8;">Hojaldre artesanal · crema pastelera de vainilla de Madagascar</p>
+              </div>
+              <span class="text-xl font-black shrink-0 ml-4" style="color: #F4F4FA;">$9.00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================== RESERVAS =================== -->
+    <section id="reservas" class="relative py-24 sm:py-32 overflow-hidden"
+             style="background: linear-gradient(180deg, #08080A 0%, #0F0F13 100%);">
+
+      <!-- Glow background -->
+      <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
+        <div class="h-[500px] w-[500px] rounded-full opacity-8"
+             style="background: radial-gradient(circle, rgba(230,57,70,0.15) 0%, transparent 70%);"></div>
+      </div>
+
+      <div class="relative z-10 mx-auto max-w-7xl px-5 lg:px-8">
+        <div class="grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:items-start">
+
+          <!-- Left: info -->
+          <div>
+            <div class="section-label mb-3">Reservas</div>
+            <h2 class="text-4xl font-black tracking-tight sm:text-5xl lg:text-5xl gradient-text leading-[1.04]">
+              Tu mesa te<br>está esperando.
+            </h2>
+            <p class="mt-5 text-base leading-relaxed" style="color: #9090A8;">
+              Reserva en menos de un minuto. Confirmamos disponibilidad y te avisamos por teléfono.
+            </p>
+
+            <!-- Info blocks -->
+            <div class="mt-8 grid gap-4">
+              <div class="flex items-center gap-4">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style="background: rgba(230,57,70,0.12); border: 1px solid rgba(230,57,70,0.2);">
+                  <svg width="16" height="16" fill="none" stroke="#E63946" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <div>
+                  <p class="font-semibold text-sm" style="color: #F4F4FA;">Calle Principal 42, Madrid</p>
+                  <p class="text-xs mt-0.5" style="color: #5A5A70;">Centro histórico · Parking cercano</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style="background: rgba(230,57,70,0.12); border: 1px solid rgba(230,57,70,0.2);">
+                  <svg width="16" height="16" fill="none" stroke="#E63946" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.79a16 16 0 0 0 6.29 6.29l.87-1.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 15.5l.19 1.42z"/></svg>
+                </div>
+                <div>
+                  <p class="font-semibold text-sm" style="color: #F4F4FA;">+34 91 000 00 00</p>
+                  <p class="text-xs mt-0.5" style="color: #5A5A70;">Lun–Dom · 10:00–22:00</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style="background: rgba(230,57,70,0.12); border: 1px solid rgba(230,57,70,0.2);">
+                  <svg width="16" height="16" fill="none" stroke="#E63946" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"/></svg>
+                </div>
+                <div>
+                  <p class="font-semibold text-sm" style="color: #F4F4FA;">Mar a domingo</p>
+                  <p class="text-xs mt-0.5" style="color: #5A5A70;">13:00–16:00 · 19:30–23:30</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: form -->
+          <form @submit.prevent="saveReservation()"
+                class="glass rounded-3xl p-7 md:p-8"
+                style="border-color: rgba(255,255,255,0.1);">
+
+            <h3 class="text-lg font-black mb-6" style="color: #F4F4FA;">Solicitar reserva</h3>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+              <label class="block sm:col-span-1">
+                <span class="block text-xs font-semibold uppercase tracking-widest mb-2" style="color: #9090A8;">Nombre completo</span>
+                <input type="text" x-model="reservationForm.nombre" placeholder="Tu nombre y apellido"
+                       class="input" required>
+              </label>
+              <label class="block">
+                <span class="block text-xs font-semibold uppercase tracking-widest mb-2" style="color: #9090A8;">Teléfono</span>
+                <input type="tel" x-model="reservationForm.telefono" placeholder="+34 600 000 000"
+                       class="input" required>
+              </label>
+              <label class="block">
+                <span class="block text-xs font-semibold uppercase tracking-widest mb-2" style="color: #9090A8;">Fecha</span>
+                <input type="date" x-model="reservationForm.fecha"
+                       class="input" required>
+              </label>
+              <label class="block">
+                <span class="block text-xs font-semibold uppercase tracking-widest mb-2" style="color: #9090A8;">Hora</span>
+                <select x-model="reservationForm.hora" class="input">
+                  <option value="13:00">13:00</option>
+                  <option value="13:30">13:30</option>
+                  <option value="14:00">14:00</option>
+                  <option value="14:30">14:30</option>
+                  <option value="15:00">15:00</option>
+                  <option value="19:30">19:30</option>
+                  <option value="20:00" selected>20:00</option>
+                  <option value="20:30">20:30</option>
+                  <option value="21:00">21:00</option>
+                  <option value="21:30">21:30</option>
+                  <option value="22:00">22:00</option>
+                </select>
+              </label>
+              <label class="block sm:col-span-2">
+                <span class="block text-xs font-semibold uppercase tracking-widest mb-2" style="color: #9090A8;">Comensales</span>
+                <select x-model="reservationForm.pax" class="input">
+                  <option value="1">1 persona</option>
+                  <option value="2" selected>2 personas</option>
+                  <option value="3">3 personas</option>
+                  <option value="4">4 personas</option>
+                  <option value="5">5 personas</option>
+                  <option value="6">6 personas</option>
+                  <option value="8">8 personas</option>
+                  <option value="10">10 personas</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="mt-4 block">
+              <span class="block text-xs font-semibold uppercase tracking-widest mb-2" style="color: #9090A8;">Notas especiales</span>
+              <textarea rows="3" x-model="reservationForm.notas"
+                        placeholder="Alergias, ocasión especial, preferencia de mesa..."
+                        class="input resize-none"></textarea>
+            </label>
+
+            <button type="submit" class="btn btn-primary w-full mt-5 justify-center">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"/></svg>
+              Confirmar reserva
+            </button>
+
+            <!-- Success message -->
+            <div x-show="reservationSent" x-cloak
+                 class="reservation-success mt-4 rounded-xl p-4 flex items-center gap-3"
+                 style="background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25);">
+              <svg class="shrink-0" width="18" height="18" fill="none" stroke="#22C55E" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <p class="text-sm font-semibold" style="color: #22C55E;">Reserva recibida. Te contactamos en breve para confirmar.</p>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =================== FOOTER =================== -->
+  <footer style="background: #08080A; border-top: 1px solid rgba(255,255,255,0.06);">
+    <div class="mx-auto max-w-7xl px-5 py-12 lg:px-8">
+      <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 mb-10">
+
+        <!-- Brand -->
+        <div class="sm:col-span-2 lg:col-span-1">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl"
+                 style="background: linear-gradient(135deg, #E63946 0%, #C41E3A 100%); box-shadow: 0 4px 12px rgba(230,57,70,0.3);">
+              <span class="text-sm font-black text-white">R</span>
+            </div>
+            <span class="font-black text-base uppercase tracking-wider" style="color: #F4F4FA;">RestoPro</span>
+          </div>
+          <p class="text-sm leading-relaxed" style="color: #5A5A70;">
+            Cocina de autor con ingredientes de temporada. Una experiencia gastronómica diseñada para recordar.
+          </p>
+        </div>
+
+        <!-- Navigación -->
+        <div>
+          <p class="text-xs font-bold uppercase tracking-widest mb-4" style="color: #5A5A70;">Navegación</p>
+          <ul class="space-y-2.5">
+            <li><a href="#menu" class="text-sm transition hover:text-white" style="color: #9090A8;">Menú</a></li>
+            <li><a href="#experiencia" class="text-sm transition hover:text-white" style="color: #9090A8;">Experiencia</a></li>
+            <li><a href="#postres" class="text-sm transition hover:text-white" style="color: #9090A8;">Postres</a></li>
+            <li><a href="#reservas" class="text-sm transition hover:text-white" style="color: #9090A8;">Reservas</a></li>
+            <li><a href="/carta-cliente.html" class="text-sm transition hover:text-white" style="color: #9090A8;">Carta cliente</a></li>
+          </ul>
+        </div>
+
+        <!-- Personal -->
+        <div>
+          <p class="text-xs font-bold uppercase tracking-widest mb-4" style="color: #5A5A70;">Acceso personal</p>
+          <ul class="space-y-2.5">
+            <li><a href="/login.html" class="text-sm transition hover:text-white" style="color: #9090A8;">Login staff</a></li>
+            <li><a href="/dashboard.html" class="text-sm transition hover:text-white" style="color: #9090A8;">Dashboard</a></li>
+            <li><a href="/reservations.html" class="text-sm transition hover:text-white" style="color: #9090A8;">Gestión reservas</a></li>
+            <li><a href="/kitchen.html" class="text-sm transition hover:text-white" style="color: #9090A8;">Pantalla cocina</a></li>
+          </ul>
+        </div>
+
+        <!-- Contacto -->
+        <div>
+          <p class="text-xs font-bold uppercase tracking-widest mb-4" style="color: #5A5A70;">Contacto</p>
+          <ul class="space-y-2.5">
+            <li class="text-sm" style="color: #9090A8;">Calle Principal 42</li>
+            <li class="text-sm" style="color: #9090A8;">Madrid, España</li>
+            <li><a href="tel:+34910000000" class="text-sm transition hover:text-white" style="color: #9090A8;">+34 91 000 00 00</a></li>
+            <li><a href="mailto:hola@restopro.es" class="text-sm transition hover:text-white" style="color: #9090A8;">hola@restopro.es</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Bottom bar -->
+      <div class="flex flex-col gap-3 pt-8 sm:flex-row sm:items-center sm:justify-between"
+           style="border-top: 1px solid rgba(255,255,255,0.05);">
+        <p class="text-xs" style="color: #5A5A70;">
+          © 2026 RestoPro · Todos los derechos reservados.
+        </p>
+        <div class="flex gap-5">
+          <a href="#" class="text-xs transition hover:text-white" style="color: #5A5A70;">Política de privacidad</a>
+          <a href="#" class="text-xs transition hover:text-white" style="color: #5A5A70;">Aviso legal</a>
+          <a href="/login.html" class="text-xs transition hover:text-white" style="color: #5A5A70;">Acceso staff</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
