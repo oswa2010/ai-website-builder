@@ -1,102 +1,214 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full bg-stone-50">
+<html lang="es" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Iniciar Sesión - RestoCRM</title>
+  <title>Iniciar Sesión — RestoPro</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/main.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
+  <style>
+    .login-bg {
+      background:
+        radial-gradient(ellipse 70% 50% at 20% 20%, rgba(230,57,70,0.14) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 60% at 80% 80%, rgba(244,162,97,0.07) 0%, transparent 50%),
+        linear-gradient(180deg, #0F0F13 0%, #08080A 100%);
+    }
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 64px 64px;
+    }
+    /* Override global input for this page */
+    .login-input {
+      width: 100%;
+      background: #1F1F27;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 0.75rem;
+      padding: 0.875rem 1.125rem;
+      color: #F4F4FA;
+      font-size: 0.9375rem;
+      font-family: 'Inter', system-ui, sans-serif;
+      transition: all 0.2s ease;
+      outline: none;
+      display: block;
+    }
+    .login-input::placeholder {
+      color: #5A5A70;
+    }
+    .login-input:hover {
+      border-color: rgba(255,255,255,0.18);
+    }
+    .login-input:focus {
+      border-color: #E63946;
+      box-shadow: 0 0 0 3px rgba(230,57,70,0.15);
+      background: #28282F;
+    }
+    .login-card {
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(32px) saturate(1.4);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 1.5rem;
+    }
+    .divider-line {
+      border: none;
+      height: 1px;
+      background: rgba(255,255,255,0.07);
+    }
+    .social-btn {
+      display: inline-flex;
+      width: 100%;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      border-radius: 999px;
+      padding: 0.625rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: #9090A8;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .social-btn:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.18);
+      color: #F4F4FA;
+    }
+    .checkbox-custom {
+      width: 1rem;
+      height: 1rem;
+      border-radius: 0.25rem;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: #1F1F27;
+      accent-color: #E63946;
+      cursor: pointer;
+    }
+  </style>
 </head>
-<body class="h-full">
-  <div class="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
-    <div class="sm:mx-auto sm:w-full sm:max-w-md">
-      <a href="/" class="flex justify-center items-center gap-2">
-        <div class="bg-red-600 p-2 rounded-lg">
-          <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-          </svg>
+
+<body class="login-bg grid-bg h-full flex items-center justify-center px-4 py-12">
+
+  <div class="w-full max-w-[420px]">
+
+    <!-- Logo -->
+    <div class="flex flex-col items-center mb-8">
+      <a href="/" class="flex items-center gap-3 mb-6">
+        <div class="flex h-11 w-11 items-center justify-center rounded-xl"
+             style="background: linear-gradient(135deg, #E63946 0%, #C41E3A 100%); box-shadow: 0 4px 20px rgba(230,57,70,0.4);">
+          <span class="text-base font-black text-white">R</span>
         </div>
-        <span class="text-2xl font-bold text-stone-900 tracking-tight">RestoCRM</span>
+        <div>
+          <p class="text-sm font-black uppercase tracking-[0.18em] leading-none" style="color: #F4F4FA;">RestoPro</p>
+          <p class="text-[10px] uppercase tracking-[0.28em] mt-0.5" style="color: #5A5A70;">Panel de gestión</p>
+        </div>
       </a>
-      <h2 class="mt-6 text-center text-3xl font-bold tracking-tight text-stone-900">Accede a tu Dashboard</h2>
-      <p class="mt-2 text-center text-sm text-stone-600">
-        ¿Aún no tienes cuenta?
-        <a href="/register.html" class="font-medium text-red-600 hover:text-red-500">&nbsp;&nbsp;Registrate ahora</a>
+
+      <h1 class="text-2xl font-black tracking-tight" style="color: #F4F4FA;">Bienvenido de nuevo</h1>
+      <p class="mt-1.5 text-sm" style="color: #9090A8;">
+        ¿Sin cuenta?
+        <a href="/register.html" class="font-semibold transition hover:opacity-80" style="color: #E63946;">Regístrate aquí</a>
       </p>
     </div>
 
-    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-      <div class="bg-white py-8 px-4 shadow sm:rounded-2xl sm:px-10 border border-stone-100">
-        <form class="space-y-6" action="/dashboard.html" method="GET">
-          <div>
-            <label for="email" class="block text-sm font-medium text-stone-700">Correo electrónico</label>
-            <div class="mt-1">
-              <input id="email" name="email" type="email" autocomplete="email" required 
-                     class="block w-full rounded-lg border-stone-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2.5 bg-stone-50 border"
-                     value="gerente@restocrm.com">
-            </div>
-          </div>
+    <!-- Card -->
+    <div class="login-card p-7">
+      <form action="/dashboard.html" method="GET" class="space-y-5">
 
-          <div>
-            <label for="password" class="block text-sm font-medium text-stone-700">Contraseña</label>
-            <div class="mt-1">
-              <input id="password" name="password" type="password" autocomplete="current-password" required 
-                     class="block w-full rounded-lg border-stone-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2.5 bg-stone-50 border">
-            </div>
-          </div>
-
-          <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <input id="remember-me" name="remember-me" type="checkbox" 
-                     class="h-4 w-4 rounded border-stone-300 text-red-600 focus:ring-red-500">
-              <label for="remember-me" class="ml-2 block text-sm text-stone-900">Recordarme</label>
-            </div>
-
-            <div class="text-sm">
-              <a href="#" class="font-medium text-red-600 hover:text-red-500">¿Olvidaste tu contraseña?</a>
-            </div>
-          </div>
-
-          <div>
-            <button type="submit" 
-                    class="flex w-full justify-center rounded-full bg-red-600 py-3 px-4 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 transition">
-              Entrar al Dashboard
-            </button>
-          </div>
-        </form>
-
-        <div class="mt-6">
-          <div class="relative">
-            <div class="absolute inset-0 flex items-center">
-              <div class="w-full border-t border-stone-300"></div>
-            </div>
-            <div class="relative flex justify-center text-sm">
-              <span class="bg-white px-2 text-stone-500">O continuar con</span>
-            </div>
-          </div>
-
-          <div class="mt-6 grid grid-cols-2 gap-3">
-            <div>
-              <a href="#" class="inline-flex w-full justify-center rounded-full bg-white py-2.5 px-4 text-stone-500 shadow-sm ring-1 ring-inset ring-stone-300 hover:bg-stone-50 focus:outline-offset-0 transition">
-                <span class="sr-only">Entrar con Google</span>
-                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.908 3.152-1.928 4.176-1.152 1.152-2.94 2.392-5.912 2.392-4.58 0-8.192-3.696-8.192-8.28s3.612-8.28 8.192-8.28c2.48 0 4.312.984 5.656 2.248l2.312-2.312C18.42 2.128 15.756.9 12.48.9 6.48.9 1.44 5.82 1.44 11.82s5.04 10.92 11.04 10.92c3.24 0 5.688-1.068 7.56-3.048 1.944-1.944 2.556-4.668 2.556-6.948 0-.672-.06-1.32-.168-1.92h-8.952z"/>
-                </svg>
-              </a>
-            </div>
-
-            <div>
-              <a href="#" class="inline-flex w-full justify-center rounded-full bg-white py-2.5 px-4 text-stone-500 shadow-sm ring-1 ring-inset ring-stone-300 hover:bg-stone-50 focus:outline-offset-0 transition">
-                <span class="sr-only">Entrar con Apple</span>
-                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701z"/>
-                </svg>
-              </a>
-            </div>
-          </div>
+        <!-- Email -->
+        <div>
+          <label for="email" class="block text-xs font-semibold uppercase tracking-widest mb-2" style="color: #9090A8;">
+            Correo electrónico
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            required
+            placeholder="gerente@restopro.com"
+            value="gerente@restocrm.com"
+            class="login-input"
+          >
         </div>
+
+        <!-- Password -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label for="password" class="block text-xs font-semibold uppercase tracking-widest" style="color: #9090A8;">
+              Contraseña
+            </label>
+            <a href="#" class="text-xs font-medium transition hover:opacity-80" style="color: #E63946;">¿Olvidaste tu contraseña?</a>
+          </div>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+            placeholder="••••••••"
+            class="login-input"
+          >
+        </div>
+
+        <!-- Remember me -->
+        <div class="flex items-center gap-2.5">
+          <input id="remember-me" name="remember-me" type="checkbox" class="checkbox-custom">
+          <label for="remember-me" class="text-sm cursor-pointer" style="color: #9090A8;">Mantener sesión iniciada</label>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit"
+                class="w-full flex items-center justify-center gap-2 rounded-full py-3 px-6 text-sm font-semibold text-white transition-all duration-200"
+                style="background: #E63946; box-shadow: 0 4px 20px rgba(230,57,70,0.35), inset 0 1px 0 rgba(255,255,255,0.15);"
+                onmouseover="this.style.background='#D62839'; this.style.boxShadow='0 6px 28px rgba(230,57,70,0.5), inset 0 1px 0 rgba(255,255,255,0.15)';"
+                onmouseout="this.style.background='#E63946'; this.style.boxShadow='0 4px 20px rgba(230,57,70,0.35), inset 0 1px 0 rgba(255,255,255,0.15)';">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+          </svg>
+          Entrar al Dashboard
+        </button>
+      </form>
+
+      <!-- Divider -->
+      <div class="my-6 flex items-center gap-3">
+        <div class="divider-line flex-1"></div>
+        <span class="text-xs" style="color: #5A5A70;">O continuar con</span>
+        <div class="divider-line flex-1"></div>
+      </div>
+
+      <!-- Social buttons -->
+      <div class="grid grid-cols-2 gap-3">
+        <a href="#" class="social-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.908 3.152-1.928 4.176-1.152 1.152-2.94 2.392-5.912 2.392-4.58 0-8.192-3.696-8.192-8.28s3.612-8.28 8.192-8.28c2.48 0 4.312.984 5.656 2.248l2.312-2.312C18.42 2.128 15.756.9 12.48.9 6.48.9 1.44 5.82 1.44 11.82s5.04 10.92 11.04 10.92c3.24 0 5.688-1.068 7.56-3.048 1.944-1.944 2.556-4.668 2.556-6.948 0-.672-.06-1.32-.168-1.92h-8.952z"/>
+          </svg>
+          Google
+        </a>
+        <a href="#" class="social-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701z"/>
+          </svg>
+          Apple
+        </a>
       </div>
     </div>
+
+    <!-- Footer note -->
+    <p class="mt-6 text-center text-xs" style="color: #5A5A70;">
+      Al iniciar sesión aceptas los
+      <a href="#" class="hover:text-white transition" style="color: #5A5A70; text-decoration: underline;">términos de uso</a>
+      y la
+      <a href="#" class="hover:text-white transition" style="color: #5A5A70; text-decoration: underline;">política de privacidad</a>.
+    </p>
+
   </div>
 </body>
 </html>
