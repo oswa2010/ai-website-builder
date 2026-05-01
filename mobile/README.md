@@ -17,7 +17,7 @@ npm run mobile
 Si el QR no conecta, ejecuta dentro de `mobile/`:
 
 ```bash
-npx expo start --tunnel
+npm run start:tunnel
 ```
 
 El modo tunnel es mas lento, pero funciona mejor cuando la red local bloquea conexiones entre dispositivos.
