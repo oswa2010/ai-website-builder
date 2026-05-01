@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "mobile": "npm --prefix mobile run start:lan",
+    "mobile:android": "npm --prefix mobile run android",
+    "mobile:ios": "npm --prefix mobile run ios",
     "preview": "vite preview",
     "deploy": "bash scripts/deploy.sh",
     "publish:github": "bash scripts/publish-github.sh",
