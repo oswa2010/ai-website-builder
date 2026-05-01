@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRM — RestoPro</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/main.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak]{display:none!important}
+    body { background:#0a0a14; font-family:'Inter',system-ui,sans-serif; color:#F0F0FF; }
+
+    .app-shell { display:flex; min-height:100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      width:240px; flex-shrink:0;
+      background:rgba(13,11,30,0.95);
+      border-right:1px solid rgba(139,92,246,0.12);
+      display:flex; flex-direction:column;
+      position:fixed; top:0; left:0; bottom:0; z-index:40;
+    }
+    .sidebar-logo {
+      padding:1.25rem 1.25rem 1rem;
+      border-bottom:1px solid rgba(139,92,246,0.1);
+      display:flex; align-items:center; gap:0.75rem;
+    }
+    .logo-pill {
+      width:36px; height:36px; border-radius:10px; flex-shrink:0;
+      background:linear-gradient(135deg,#7C3AED,#4F46E5);
+      box-shadow:0 4px 14px rgba(124,58,237,0.45);
+      display:flex; align-items:center; justify-content:center;
+      font-weight:900; font-size:0.9rem; color:white;
+    }
+    .sidebar-nav { flex:1; overflow-y:auto; padding:1rem 0.75rem; display:flex; flex-direction:column; gap:0.25rem; }
+    .nav-item {
+      display:flex; align-items:center; gap:0.625rem;
+      padding:0.625rem 0.875rem; border-radius:0.75rem;
+      font-size:0.8125rem; font-weight:600; color:#8B8BA8;
+      text-decoration:none; transition:all 0.18s ease; letter-spacing:0.02em;
+    }
+    .nav-item:hover { color:#F0F0FF; background:rgba(139,92,246,0.1); }
+    .nav-item.active { color:#A78BFA; background:rgba(124,58,237,0.14); border:1px solid rgba(124,58,237,0.22); }
+    .nav-item svg { flex-shrink:0; }
+    .nav-section { font-size:0.625rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:#4A4A68; padding:0.75rem 0.875rem 0.25rem; }
+
+    /* Main */
+    .main-content { margin-left:240px; flex:1; display:flex; flex-direction:column; }
+    .topbar {
+      position:sticky; top:0; z-index:30;
+      background:rgba(10,10,20,0.92); backdrop-filter:blur(20px);
+      border-bottom:1px solid rgba(139,92,246,0.1);
+      padding:0.875rem 1.75rem;
+      display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    }
+    .page-content { padding:2rem 1.75rem; flex:1; }
+
+    /* Search bar */
+    .search-bar {
+      display:flex; align-items:center; gap:0.5rem;
+      background:rgba(26,23,48,0.8); border:1px solid rgba(139,92,246,0.16);
+      border-radius:0.75rem; padding:0.5rem 0.875rem; width:280px;
+      transition:all 0.2s;
+    }
+    .search-bar:focus-within { border-color:#7C3AED; box-shadow:0 0 0 3px rgba(124,58,237,0.15); }
+    .search-bar input { background:transparent; border:none; outline:none; color:#F0F0FF; font-size:0.875rem; font-family:'Inter',system-ui,sans-serif; width:100%; }
+    .search-bar input::placeholder { color:#4A4A68; }
+
+    /* Table container */
+    .table-wrap { background:rgba(18,16,42,0.7); border:1px solid rgba(139,92,246,0.1); border-radius:1.25rem; overflow:hidden; }
+
+    /* Row action hover */
+    .table-row { cursor:pointer; }
+    .table-row:hover td { background:rgba(124,58,237,0.06)!important; }
+
+    /* Modal */
+    .modal-bg {
+      position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px);
+      z-index:200; display:flex; align-items:center; justify-content:center; padding:1rem;
+    }
+    .modal-panel {
+      background:#12102a; border:1px solid rgba(139,92,246,0.22);
+      border-radius:1.5rem; width:100%; max-width:540px;
+      padding:2rem; box-shadow:0 40px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(139,92,246,0.08) inset;
+      max-height:90vh; overflow-y:auto;
+    }
+
+    /* Form field */
+    .field { margin-bottom:1.125rem; }
+    .field label { display:block; font-size:0.6875rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#8B8BA8; margin-bottom:0.4rem; }
+    .field input, .field select, .field textarea {
+      width:100%; background:#1a1730; border:1px solid rgba(139,92,246,0.18);
+      border-radius:0.75rem; padding:0.75rem 1rem; color:#F0F0FF;
+      font-size:0.9rem; font-family:'Inter',system-ui,sans-serif;
+      outline:none; transition:all 0.2s; display:block;
+    }
+    .field input::placeholder, .field textarea::placeholder { color:#4A4A68; }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color:#7C3AED; box-shadow:0 0 0 3px rgba(124,58,237,0.18); background:#221f38;
+    }
+    .field select option { background:#1a1730; color:#F0F0FF; }
+
+    /* Status pill */
+    .pill {
+      display:inline-flex; align-items:center; gap:0.3rem;
+      font-size:0.6875rem; font-weight:700; letter-spacing:0.06em;
+      text-transform:uppercase; border-radius:999px; padding:0.2rem 0.625rem;
+    }
+    .pill-active  { background:rgba(34,197,94,0.12);  color:#86EFAC; border:1px solid rgba(34,197,94,0.2); }
+    .pill-pending { background:rgba(234,179,8,0.12);  color:#FDE047; border:1px solid rgba(234,179,8,0.2); }
+    .pill-inactive{ background:rgba(239,68,68,0.12);  color:#FCA5A5; border:1px solid rgba(239,68,68,0.2); }
+    .pill-vip     { background:rgba(124,58,237,0.14); color:#A78BFA; border:1px solid rgba(124,58,237,0.25); }
+
+    /* Confirm delete */
+    .confirm-box {
+      background:#1a1730; border:1px solid rgba(239,68,68,0.25);
+      border-radius:1.25rem; padding:1.75rem;
+      box-shadow:0 0 40px rgba(239,68,68,0.1);
+    }
+
+    /* Pagination */
+    .pag-btn {
+      display:inline-flex; align-items:center; justify-content:center;
+      width:32px; height:32px; border-radius:0.5rem;
+      font-size:0.8125rem; font-weight:600; cursor:pointer;
+      background:rgba(139,92,246,0.06); border:1px solid rgba(139,92,246,0.14);
+      color:#8B8BA8; transition:all 0.18s;
+    }
+    .pag-btn:hover { background:rgba(139,92,246,0.14); color:#F0F0FF; }
+    .pag-btn.active { background:rgba(124,58,237,0.25); border-color:rgba(124,58,237,0.4); color:#A78BFA; }
+    .pag-btn:disabled { opacity:0.35; cursor:not-allowed; }
+
+    /* Responsive */
+    @media(max-width:768px){
+      .sidebar { transform:translateX(-100%); transition:transform 0.3s; }
+      .sidebar.open { transform:translateX(0); }
+      .main-content { margin-left:0; }
+    }
+  </style>
+</head>
+
+<body x-data="crmApp()" x-init="init()">
+
+<!-- ================ SIDEBAR ================ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-pill">R</div>
+    <div>
+      <p style="font-size:0.8rem;font-weight:900;letter-spacing:0.15em;text-transform:uppercase;color:#F0F0FF;line-height:1;">RestoPro</p>
+      <p style="font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:#4A4A68;margin-top:0.15rem;">CRM</p>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Principal</div>
+    <a href="/dashboard.html" class="nav-item">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+    <a href="/crm.html" class="nav-item active">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      CRM Clientes
+    </a>
+    <a href="/reservations.html" class="nav-item">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"/></svg>
+      Reservas
+    </a>
+    <div class="nav-section">Operaciones</div>
+    <a href="/pos.html" class="nav-item">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      Punto de Venta
+    </a>
+    <a href="/kitchen.html" class="nav-item">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 1 10 10c0 5.5-4.5 10-10 10S2 17.5 2 12c0-2.8 1.1-5.3 3-7.1"/><path d="M12 8v4l3 3"/></svg>
+      Cocina
+    </a>
+    <a href="/billing.html" class="nav-item">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Facturación
+    </a>
+    <a href="/inventory.html" class="nav-item">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      Inventario
+    </a>
+    <div class="nav-section">Config</div>
+    <a href="/menu-management.html" class="nav-item">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Menú
+    </a>
+    <a href="/login.html" class="nav-item" style="margin-top:auto;">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Cerrar sesión
+    </a>
+  </nav>
+</aside>
+
+<!-- ================ MAIN ================ -->
+<div class="main-content">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div>
+      <h1 style="font-size:1.125rem;font-weight:800;letter-spacing:-0.02em;color:#F0F0FF;">CRM Clientes</h1>
+      <p style="font-size:0.75rem;color:#4A4A68;margin-top:0.1rem;">Gestión completa de clientes · <span x-text="records.length"></span> registros</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <!-- Search -->
+      <div class="search-bar">
+        <svg width="14" height="14" fill="none" stroke="#4A4A68" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Buscar cliente..." x-model="search" @input="filterRecords()">
+      </div>
+      <!-- Filter status -->
+      <select x-model="filterStatus" @change="filterRecords()"
+              style="background:#1a1730;border:1px solid rgba(139,92,246,0.16);border-radius:0.75rem;padding:0.5rem 0.875rem;color:#F0F0FF;font-size:0.8125rem;font-family:'Inter',system-ui,sans-serif;outline:none;cursor:pointer;">
+        <option value="">Todos los estados</option>
+        <option value="Activo">Activo</option>
+        <option value="VIP">VIP</option>
+        <option value="Pendiente">Pendiente</option>
+        <option value="Inactivo">Inactivo</option>
+      </select>
+      <!-- Add button -->
+      <button @click="openAdd()"
+              style="display:inline-flex;align-items:center;gap:0.4rem;background:linear-gradient(135deg,#7C3AED,#4F46E5);color:white;border:none;border-radius:999px;padding:0.55rem 1.25rem;font-size:0.875rem;font-weight:700;font-family:'Inter',system-ui,sans-serif;cursor:pointer;box-shadow:0 4px 16px rgba(124,58,237,0.4);transition:all 0.2s;"
+              onmouseover="this.style.boxShadow='0 6px 24px rgba(124,58,237,0.55)';this.style.transform='translateY(-1px)'"
+              onmouseout="this.style.boxShadow='0 4px 16px rgba(124,58,237,0.4)';this.style.transform='translateY(0)'">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nuevo cliente
+      </button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="page-content">
+
+    <!-- Stats row -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.75rem;">
+      <div class="stat-card">
+        <div class="stat-card-label">Total clientes</div>
+        <div class="stat-card-value" x-text="records.length"></div>
+        <div style="font-size:0.75rem;color:#86EFAC;margin-top:0.25rem;">↑ activos este mes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">VIP</div>
+        <div class="stat-card-value gradient-text-brand" x-text="records.filter(r=>r.status==='VIP').length"></div>
+        <div style="font-size:0.75rem;color:#A78BFA;margin-top:0.25rem;">clientes premium</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Activos</div>
+        <div class="stat-card-value" x-text="records.filter(r=>r.status==='Activo').length"></div>
+        <div style="font-size:0.75rem;color:#8B8BA8;margin-top:0.25rem;">en los últimos 30 días</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Pendientes</div>
+        <div class="stat-card-value" style="color:#FDE047;" x-text="records.filter(r=>r.status==='Pendiente').length"></div>
+        <div style="font-size:0.75rem;color:#FDE047;margin-top:0.25rem;">requieren seguimiento</div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <!-- Table header actions -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid rgba(139,92,246,0.08);">
+        <p style="font-size:0.8125rem;font-weight:600;color:#8B8BA8;">
+          Mostrando <span x-text="filtered.length" style="color:#F0F0FF;"></span> de <span x-text="records.length" style="color:#F0F0FF;"></span> clientes
+        </p>
+        <div style="display:flex;gap:0.5rem;">
+          <button @click="exportCSV()" style="display:inline-flex;align-items:center;gap:0.35rem;font-size:0.75rem;font-weight:600;color:#8B8BA8;background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.14);border-radius:0.5rem;padding:0.35rem 0.75rem;cursor:pointer;transition:all 0.18s;font-family:'Inter',system-ui,sans-serif;">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Exportar CSV
+          </button>
+        </div>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="background:rgba(13,11,30,0.6);">
+              <th style="padding:0.75rem 1.25rem;text-align:left;font-size:0.6875rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#4A4A68;white-space:nowrap;">ID</th>
+              <th style="padding:0.75rem 1rem;text-align:left;font-size:0.6875rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#4A4A68;">Cliente</th>
+              <th style="padding:0.75rem 1rem;text-align:left;font-size:0.6875rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#4A4A68;">Contacto</th>
+              <th style="padding:0.75rem 1rem;text-align:left;font-size:0.6875rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#4A4A68;">Visitas</th>
+              <th style="padding:0.75rem 1rem;text-align:left;font-size:0.6875rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#4A4A68;">Total gastado</th>
+              <th style="padding:0.75rem 1rem;text-align:left;font-size:0.6875rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#4A4A68;">Última visita</th>
+              <th style="padding:0.75rem 1rem;text-align:left;font-size:0.6875rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#4A4A68;">Estado</th>
+              <th style="padding:0.75rem 1rem;text-align:center;font-size:0.6875rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#4A4A68;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="(r, i) in paginated" :key="r.id">
+              <tr style="border-top:1px solid rgba(139,92,246,0.07);transition:background 0.15s;" @mouseenter="$el.style.background='rgba(124,58,237,0.05)'" @mouseleave="$el.style.background='transparent'">
+                <td style="padding:0.875rem 1.25rem;font-size:0.75rem;color:#4A4A68;font-weight:600;" x-text="'#'+String(r.id).padStart(4,'0')"></td>
+                <td style="padding:0.875rem 1rem;">
+                  <div style="display:flex;align-items:center;gap:0.625rem;">
+                    <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#4F46E5);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:white;flex-shrink:0;" x-text="r.nombre.charAt(0).toUpperCase()"></div>
+                    <div>
+                      <p style="font-size:0.875rem;font-weight:700;color:#F0F0FF;" x-text="r.nombre+' '+r.apellidos"></p>
+                      <p style="font-size:0.75rem;color:#4A4A68;" x-text="r.categoria || 'Sin categoría'"></p>
+                    </div>
+                  </div>
+                </td>
+                <td style="padding:0.875rem 1rem;">
+                  <p style="font-size:0.8125rem;color:#8B8BA8;" x-text="r.email || '—'"></p>
+                  <p style="font-size:0.8125rem;color:#8B8BA8;" x-text="r.telefono || '—'"></p>
+                </td>
+                <td style="padding:0.875rem 1rem;font-size:0.875rem;font-weight:700;color:#F0F0FF;" x-text="r.visitas || 0"></td>
+                <td style="padding:0.875rem 1rem;font-size:0.875rem;font-weight:700;color:#A78BFA;" x-text="'$'+(r.totalGastado||0).toFixed(2)"></td>
+                <td style="padding:0.875rem 1rem;font-size:0.8125rem;color:#8B8BA8;" x-text="r.ultimaVisita || '—'"></td>
+                <td style="padding:0.875rem 1rem;">
+                  <span class="pill"
+                    :class="{
+                      'pill-active':  r.status==='Activo',
+                      'pill-vip':     r.status==='VIP',
+                      'pill-pending': r.status==='Pendiente',
+                      'pill-inactive':r.status==='Inactivo'
+                    }"
+                    x-text="r.status"></span>
+                </td>
+                <td style="padding:0.875rem 1rem;text-align:center;">
+                  <div style="display:inline-flex;gap:0.4rem;">
+                    <!-- Edit -->
+                    <button @click.stop="openEdit(r)"
+                            style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:0.5rem;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.2);color:#A78BFA;cursor:pointer;transition:all 0.18s;"
+                            onmouseover="this.style.background='rgba(124,58,237,0.22)'" onmouseout="this.style.background='rgba(124,58,237,0.12)'"
+                            title="Editar">
+                      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <!-- Delete -->
+                    <button @click.stop="openDelete(r)"
+                            style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:0.5rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#FCA5A5;cursor:pointer;transition:all 0.18s;"
+                            onmouseover="this.style.background='rgba(239,68,68,0.22)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'"
+                            title="Eliminar">
+                      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </template>
+            <!-- Empty state -->
+            <tr x-show="filtered.length === 0">
+              <td colspan="8" style="padding:3rem;text-align:center;color:#4A4A68;">
+                <svg width="40" height="40" fill="none" stroke="#4A4A68" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 0.75rem;display:block;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <p style="font-size:0.875rem;font-weight:600;color:#8B8BA8;">No se encontraron clientes</p>
+                <p style="font-size:0.75rem;margin-top:0.25rem;">Intenta con otro término de búsqueda o agrega un nuevo cliente</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0.875rem 1.25rem;border-top:1px solid rgba(139,92,246,0.08);">
+        <p style="font-size:0.75rem;color:#4A4A68;">
+          Página <span x-text="page" style="color:#8B8BA8;"></span> de <span x-text="totalPages" style="color:#8B8BA8;"></span>
+        </p>
+        <div style="display:flex;gap:0.375rem;align-items:center;">
+          <button class="pag-btn" @click="page=1" :disabled="page===1">«</button>
+          <button class="pag-btn" @click="page--" :disabled="page===1">‹</button>
+          <template x-for="p in totalPages" :key="p">
+            <button class="pag-btn" :class="{'active':page===p}" @click="page=p" x-text="p" x-show="totalPages<=7||Math.abs(p-page)<=2"></button>
+          </template>
+          <button class="pag-btn" @click="page++" :disabled="page===totalPages">›</button>
+          <button class="pag-btn" @click="page=totalPages" :disabled="page===totalPages">»</button>
+        </div>
+        <select x-model.number="perPage" @change="page=1"
+                style="background:#1a1730;border:1px solid rgba(139,92,246,0.16);border-radius:0.5rem;padding:0.35rem 0.625rem;color:#8B8BA8;font-size:0.75rem;font-family:'Inter',system-ui,sans-serif;outline:none;cursor:pointer;">
+          <option value="10">10 / pág</option>
+          <option value="20">20 / pág</option>
+          <option value="50">50 / pág</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================ MODAL: ADD / EDIT ================ -->
+<div class="modal-bg" x-show="showForm" x-cloak x-transition>
+  <div class="modal-panel" @click.stop>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+      <h2 style="font-size:1.125rem;font-weight:800;color:#F0F0FF;" x-text="editMode ? 'Editar cliente' : 'Nuevo cliente'"></h2>
+      <button @click="closeForm()" style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.16);border-radius:0.5rem;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:#8B8BA8;cursor:pointer;">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <form @submit.prevent="saveRecord()">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 1rem;">
+        <div class="field">
+          <label>Nombre *</label>
+          <input type="text" x-model="form.nombre" placeholder="Nombre" required>
+        </div>
+        <div class="field">
+          <label>Apellidos</label>
+          <input type="text" x-model="form.apellidos" placeholder="Apellidos">
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" x-model="form.email" placeholder="correo@ejemplo.com">
+        </div>
+        <div class="field">
+          <label>Teléfono</label>
+          <input type="tel" x-model="form.telefono" placeholder="+34 600 000 000">
+        </div>
+        <div class="field">
+          <label>Categoría</label>
+          <select x-model="form.categoria">
+            <option value="">Sin categoría</option>
+            <option>Cliente frecuente</option>
+            <option>Empresarial</option>
+            <option>Turista</option>
+            <option>Influencer</option>
+            <option>Grupo</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Estado</label>
+          <select x-model="form.status">
+            <option>Activo</option>
+            <option>VIP</option>
+            <option>Pendiente</option>
+            <option>Inactivo</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Visitas</label>
+          <input type="number" x-model.number="form.visitas" placeholder="0" min="0">
+        </div>
+        <div class="field">
+          <label>Total gastado ($)</label>
+          <input type="number" x-model.number="form.totalGastado" placeholder="0.00" min="0" step="0.01">
+        </div>
+        <div class="field">
+          <label>Última visita</label>
+          <input type="date" x-model="form.ultimaVisita">
+        </div>
+        <div class="field">
+          <label>Origen</label>
+          <select x-model="form.origen">
+            <option value="">—</option>
+            <option>Web</option>
+            <option>Referido</option>
+            <option>Redes sociales</option>
+            <option>Walk-in</option>
+            <option>Evento</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Notas</label>
+        <textarea x-model="form.notas" rows="2" placeholder="Alergias, preferencias, observaciones..."></textarea>
+      </div>
+
+      <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:0.5rem;">
+        <button type="button" @click="closeForm()"
+                style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.625rem 1.25rem;border-radius:999px;background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.16);color:#8B8BA8;font-size:0.875rem;font-weight:600;font-family:'Inter',system-ui,sans-serif;cursor:pointer;transition:all 0.18s;">
+          Cancelar
+        </button>
+        <button type="submit"
+                style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.625rem 1.5rem;border-radius:999px;background:linear-gradient(135deg,#7C3AED,#4F46E5);border:none;color:white;font-size:0.875rem;font-weight:700;font-family:'Inter',system-ui,sans-serif;cursor:pointer;box-shadow:0 4px 16px rgba(124,58,237,0.4);transition:all 0.2s;">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          <span x-text="editMode ? 'Guardar cambios' : 'Crear cliente'"></span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ================ MODAL: DELETE CONFIRM ================ -->
+<div class="modal-bg" x-show="showDelete" x-cloak x-transition>
+  <div class="modal-panel" style="max-width:400px;" @click.stop>
+    <div style="text-align:center;padding:0.5rem 0 1.5rem;">
+      <div style="width:52px;height:52px;border-radius:50%;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+        <svg width="22" height="22" fill="none" stroke="#FCA5A5" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+      </div>
+      <h3 style="font-size:1.1rem;font-weight:800;color:#F0F0FF;margin-bottom:0.5rem;">¿Eliminar cliente?</h3>
+      <p style="font-size:0.875rem;color:#8B8BA8;line-height:1.5;">
+        Se eliminará permanentemente a <strong style="color:#F0F0FF;" x-text="deleteTarget?.nombre+' '+deleteTarget?.apellidos"></strong>. Esta acción no se puede deshacer.
+      </p>
+    </div>
+    <div style="display:flex;gap:0.75rem;">
+      <button @click="showDelete=false"
+              style="flex:1;padding:0.7rem;border-radius:999px;background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.16);color:#8B8BA8;font-size:0.875rem;font-weight:600;font-family:'Inter',system-ui,sans-serif;cursor:pointer;">
+        Cancelar
+      </button>
+      <button @click="confirmDelete()"
+              style="flex:1;padding:0.7rem;border-radius:999px;background:linear-gradient(135deg,#DC2626,#B91C1C);border:none;color:white;font-size:0.875rem;font-weight:700;font-family:'Inter',system-ui,sans-serif;cursor:pointer;box-shadow:0 4px 16px rgba(239,68,68,0.35);">
+        Sí, eliminar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================ TOAST ================ -->
+<div x-show="toast.show" x-cloak x-transition
+     style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:300;display:flex;align-items:center;gap:0.625rem;background:#12102a;border:1px solid rgba(139,92,246,0.25);border-radius:0.875rem;padding:0.875rem 1.25rem;box-shadow:0 20px 40px rgba(0,0,0,0.5);">
+  <svg width="16" height="16" fill="none" stroke="#A78BFA" stroke-width="2.2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+  <p style="font-size:0.875rem;font-weight:600;color:#F0F0FF;" x-text="toast.message"></p>
+</div>
+
+<script>
+function crmApp() {
+  return {
+    records: [],
+    filtered: [],
+    paginated: [],
+    search: '',
+    filterStatus: '',
+    page: 1,
+    perPage: 10,
+    totalPages: 1,
+    showForm: false,
+    showDelete: false,
+    editMode: false,
+    deleteTarget: null,
+    toast: { show: false, message: '' },
+    form: {},
+
+    init() {
+      const saved = localStorage.getItem('restopro_crm');
+      this.records = saved ? JSON.parse(saved) : this.seedData();
+      this.filterRecords();
+    },
+
+    seedData() {
+      return [
+        { id:1001, nombre:'María',  apellidos:'González Ruiz',  email:'maria@email.com',    telefono:'+34 612 345 678', categoria:'Cliente frecuente', status:'VIP',      visitas:24, totalGastado:1840.50, ultimaVisita:'2026-04-10', origen:'Referido',      notas:'Alergia a los frutos secos. Prefiere mesa junto a la ventana.' },
+        { id:1002, nombre:'Carlos', apellidos:'Martínez López',  email:'carlos@email.com',   telefono:'+34 688 765 432', categoria:'Empresarial',       status:'Activo',   visitas:8,  totalGastado:640.00,  ultimaVisita:'2026-04-18', origen:'Web',           notas:'Reservas para grupos de empresa.' },
+        { id:1003, nombre:'Ana',    apellidos:'Pérez Sánchez',   email:'ana@email.com',      telefono:'+34 654 321 987', categoria:'Turista',           status:'Inactivo', visitas:2,  totalGastado:120.00,  ultimaVisita:'2025-12-02', origen:'Walk-in',       notas:'' },
+        { id:1004, nombre:'Luis',   apellidos:'Fernández Torres', email:'luis@email.com',    telefono:'+34 699 111 222', categoria:'Cliente frecuente', status:'Activo',   visitas:15, totalGastado:980.75,  ultimaVisita:'2026-04-22', origen:'Redes sociales',notas:'Vegano. Le gustan las sugerencias del chef.' },
+        { id:1005, nombre:'Sofia',  apellidos:'Ramírez Castro',  email:'sofia@email.com',    telefono:'+34 677 333 444', categoria:'Influencer',        status:'VIP',      visitas:6,  totalGastado:520.00,  ultimaVisita:'2026-04-15', origen:'Redes sociales',notas:'Influencer gastronómica. 120k seguidores Instagram.' },
+        { id:1006, nombre:'Pedro',  apellidos:'García Moreno',   email:'pedro@email.com',    telefono:'+34 645 555 666', categoria:'Grupo',             status:'Pendiente',visitas:1,  totalGastado:350.00,  ultimaVisita:'2026-04-01', origen:'Web',           notas:'Grupo cumpleaños. Seguimiento pendiente.' },
+        { id:1007, nombre:'Elena',  apellidos:'López Vidal',     email:'elena@email.com',    telefono:'+34 622 777 888', categoria:'Cliente frecuente', status:'Activo',   visitas:19, totalGastado:1320.00, ultimaVisita:'2026-04-20', origen:'Referido',      notas:'' },
+        { id:1008, nombre:'Javier', apellidos:'Romero Blanco',   email:'javier@email.com',   telefono:'+34 611 999 000', categoria:'Empresarial',       status:'Activo',   visitas:12, totalGastado:890.25,  ultimaVisita:'2026-04-17', origen:'Empresarial',   notas:'Cenas de directivos. Requiere factura.' },
+        { id:1009, nombre:'Laura',  apellidos:'Sanz Herrero',    email:'laura@email.com',    telefono:'+34 633 221 443', categoria:'Turista',           status:'Inactivo', visitas:3,  totalGastado:210.50,  ultimaVisita:'2025-11-14', origen:'Walk-in',       notas:'' },
+        { id:1010, nombre:'Diego',  apellidos:'Morales Fuentes', email:'diego@email.com',    telefono:'+34 656 887 665', categoria:'Cliente frecuente', status:'VIP',      visitas:31, totalGastado:2650.00, ultimaVisita:'2026-04-24', origen:'Referido',      notas:'Coleccionista de vinos. Solicitar sumiller.' },
+      ];
+    },
+
+    save() {
+      localStorage.setItem('restopro_crm', JSON.stringify(this.records));
+    },
+
+    filterRecords() {
+      const q = this.search.toLowerCase().trim();
+      this.filtered = this.records.filter(r => {
+        const matchSearch = !q ||
+          (r.nombre+' '+r.apellidos).toLowerCase().includes(q) ||
+          (r.email||'').toLowerCase().includes(q) ||
+          (r.telefono||'').includes(q);
+        const matchStatus = !this.filterStatus || r.status === this.filterStatus;
+        return matchSearch && matchStatus;
+      });
+      this.page = 1;
+      this.updatePagination();
+    },
+
+    updatePagination() {
+      this.totalPages = Math.max(1, Math.ceil(this.filtered.length / this.perPage));
+      if (this.page > this.totalPages) this.page = this.totalPages;
+      const start = (this.page - 1) * this.perPage;
+      this.paginated = this.filtered.slice(start, start + this.perPage);
+    },
+
+    openAdd() {
+      this.editMode = false;
+      this.form = { nombre:'', apellidos:'', email:'', telefono:'', categoria:'', status:'Activo', visitas:0, totalGastado:0, ultimaVisita:'', origen:'', notas:'' };
+      this.showForm = true;
+    },
+
+    openEdit(r) {
+      this.editMode = true;
+      this.form = { ...r };
+      this.showForm = true;
+    },
+
+    closeForm() {
+      this.showForm = false;
+      this.form = {};
+    },
+
+    saveRecord() {
+      if (this.editMode) {
+        const idx = this.records.findIndex(r => r.id === this.form.id);
+        if (idx !== -1) this.records[idx] = { ...this.form };
+        this.showToast('Cliente actualizado correctamente');
+      } else {
+        const newId = this.records.length ? Math.max(...this.records.map(r=>r.id))+1 : 1001;
+        this.records.unshift({ ...this.form, id: newId });
+        this.showToast('Cliente creado correctamente');
+      }
+      this.save();
+      this.filterRecords();
+      this.closeForm();
+    },
+
+    openDelete(r) {
+      this.deleteTarget = r;
+      this.showDelete = true;
+    },
+
+    confirmDelete() {
+      this.records = this.records.filter(r => r.id !== this.deleteTarget.id);
+      this.save();
+      this.filterRecords();
+      this.showDelete = false;
+      this.showToast('Cliente eliminado');
+    },
+
+    showToast(msg) {
+      this.toast = { show: true, message: msg };
+      setTimeout(() => { this.toast.show = false; }, 3000);
+    },
+
+    exportCSV() {
+      const headers = ['ID','Nombre','Apellidos','Email','Teléfono','Categoría','Estado','Visitas','Total Gastado','Última Visita','Origen','Notas'];
+      const rows = this.filtered.map(r => [r.id,r.nombre,r.apellidos,r.email,r.telefono,r.categoria,r.status,r.visitas,r.totalGastado,r.ultimaVisita,r.origen,r.notas]);
+      const csv = [headers, ...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+      const a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent('\uFEFF'+csv);
+      a.download = 'clientes-restopro.csv';
+      a.click();
+    }
+  }
+}
+
+// Watch page changes
+document.addEventListener('alpine:initialized', () => {
+  Alpine.effect(() => {
+    const app = Alpine.store ? null : null; // trigger via x-effect in template
+  });
+});
+</script>
+<!-- Reactivity for pagination page change -->
+<script>
+document.addEventListener('alpine:initialized', () => {});
+</script>
+</body>
+</html>

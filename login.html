@@ -9,124 +9,248 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/main.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
   <style>
-    .login-bg {
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: 'Inter', system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      background: #0a0a14;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Fondo con gradiente violeta-índigo */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
       background:
-        radial-gradient(ellipse 70% 50% at 20% 20%, rgba(230,57,70,0.14) 0%, transparent 55%),
-        radial-gradient(ellipse 50% 60% at 80% 80%, rgba(244,162,97,0.07) 0%, transparent 50%),
-        linear-gradient(180deg, #0F0F13 0%, #08080A 100%);
+        radial-gradient(ellipse 80% 60% at 15% 10%, rgba(124,58,237,0.28) 0%, transparent 55%),
+        radial-gradient(ellipse 60% 50% at 85% 90%, rgba(79,70,229,0.22) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 40% at 50% 50%, rgba(139,92,246,0.08) 0%, transparent 65%),
+        linear-gradient(160deg, #0d0b1e 0%, #0a0a14 50%, #0c0a18 100%);
+      z-index: 0;
     }
-    .grid-bg {
+
+    /* Grid sutil */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
       background-image:
-        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-      background-size: 64px 64px;
+        linear-gradient(rgba(139,92,246,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(139,92,246,0.06) 1px, transparent 1px);
+      background-size: 60px 60px;
+      z-index: 0;
     }
-    /* Override global input for this page */
-    .login-input {
+
+    .login-wrap {
+      position: relative;
+      z-index: 10;
       width: 100%;
-      background: #1F1F27;
-      border: 1px solid rgba(255,255,255,0.10);
-      border-radius: 0.75rem;
+      max-width: 420px;
+    }
+
+    /* Card de cristal */
+    .login-card {
+      background: rgba(255,255,255,0.035);
+      backdrop-filter: blur(40px) saturate(1.6);
+      border: 1px solid rgba(139,92,246,0.20);
+      border-radius: 1.75rem;
+      padding: 2.25rem 2rem;
+      box-shadow:
+        0 0 0 1px rgba(139,92,246,0.08) inset,
+        0 40px 80px rgba(0,0,0,0.5),
+        0 0 60px rgba(124,58,237,0.08);
+    }
+
+    /* Logo badge */
+    .logo-badge {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%);
+      box-shadow: 0 6px 24px rgba(124,58,237,0.5), 0 0 0 1px rgba(255,255,255,0.1) inset;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 900;
+      color: white;
+      letter-spacing: -0.02em;
+    }
+
+    /* Input */
+    .field-label {
+      display: block;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #8B8BA8;
+      margin-bottom: 0.5rem;
+    }
+
+    .field-input {
+      width: 100%;
+      background: rgba(13,11,30,0.7);
+      border: 1px solid rgba(139,92,246,0.18);
+      border-radius: 0.875rem;
       padding: 0.875rem 1.125rem;
-      color: #F4F4FA;
+      color: #F0F0FF;
       font-size: 0.9375rem;
       font-family: 'Inter', system-ui, sans-serif;
-      transition: all 0.2s ease;
+      font-weight: 400;
       outline: none;
+      transition: all 0.2s ease;
       display: block;
     }
-    .login-input::placeholder {
-      color: #5A5A70;
+    .field-input::placeholder {
+      color: #4A4A68;
+      font-weight: 400;
     }
-    .login-input:hover {
-      border-color: rgba(255,255,255,0.18);
+    .field-input:hover {
+      border-color: rgba(139,92,246,0.35);
     }
-    .login-input:focus {
-      border-color: #E63946;
-      box-shadow: 0 0 0 3px rgba(230,57,70,0.15);
-      background: #28282F;
+    .field-input:focus {
+      border-color: #7C3AED;
+      background: rgba(20,16,40,0.85);
+      box-shadow: 0 0 0 3px rgba(124,58,237,0.18), 0 0 20px rgba(124,58,237,0.1);
     }
-    .login-card {
-      background: rgba(255,255,255,0.03);
-      backdrop-filter: blur(32px) saturate(1.4);
-      border: 1px solid rgba(255,255,255,0.09);
-      border-radius: 1.5rem;
-    }
-    .divider-line {
+
+    /* Submit button */
+    .btn-login {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      border-radius: 999px;
+      padding: 0.875rem 1.5rem;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      font-family: 'Inter', system-ui, sans-serif;
+      color: white;
       border: none;
-      height: 1px;
-      background: rgba(255,255,255,0.07);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%);
+      box-shadow: 0 4px 20px rgba(124,58,237,0.45), inset 0 1px 0 rgba(255,255,255,0.18);
+      letter-spacing: -0.01em;
     }
-    .social-btn {
+    .btn-login:hover {
+      background: linear-gradient(135deg, #6D28D9 0%, #4338CA 100%);
+      box-shadow: 0 6px 28px rgba(124,58,237,0.6), inset 0 1px 0 rgba(255,255,255,0.18);
+      transform: translateY(-1px);
+    }
+    .btn-login:active {
+      transform: translateY(0);
+    }
+
+    /* Social btn */
+    .btn-social {
       display: inline-flex;
       width: 100%;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       gap: 0.5rem;
       border-radius: 999px;
       padding: 0.625rem 1rem;
       font-size: 0.875rem;
       font-weight: 500;
       font-family: 'Inter', system-ui, sans-serif;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.10);
-      color: #9090A8;
+      background: rgba(139,92,246,0.06);
+      border: 1px solid rgba(139,92,246,0.16);
+      color: #8B8BA8;
       transition: all 0.2s ease;
       cursor: pointer;
       text-decoration: none;
     }
-    .social-btn:hover {
-      background: rgba(255,255,255,0.08);
-      border-color: rgba(255,255,255,0.18);
-      color: #F4F4FA;
+    .btn-social:hover {
+      background: rgba(139,92,246,0.12);
+      border-color: rgba(139,92,246,0.3);
+      color: #C4B5FD;
     }
-    .checkbox-custom {
+
+    /* Checkbox */
+    input[type="checkbox"] {
       width: 1rem;
       height: 1rem;
-      border-radius: 0.25rem;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: #1F1F27;
-      accent-color: #E63946;
+      border-radius: 4px;
+      accent-color: #7C3AED;
       cursor: pointer;
+      border: 1px solid rgba(139,92,246,0.3);
+      background: rgba(13,11,30,0.7);
+    }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 1.5rem 0;
+    }
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: rgba(139,92,246,0.12);
+    }
+    .divider-text {
+      font-size: 0.75rem;
+      color: #4A4A68;
+      white-space: nowrap;
+    }
+
+    /* Glow orb decorative */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 1;
     }
   </style>
 </head>
 
-<body class="login-bg grid-bg h-full flex items-center justify-center px-4 py-12">
+<body>
+  <!-- Decorative orbs -->
+  <div class="orb" style="width:320px;height:320px;background:rgba(124,58,237,0.18);top:-80px;left:-80px;"></div>
+  <div class="orb" style="width:260px;height:260px;background:rgba(79,70,229,0.14);bottom:-60px;right:-60px;"></div>
 
-  <div class="w-full max-w-[420px]">
+  <div class="login-wrap">
 
-    <!-- Logo -->
-    <div class="flex flex-col items-center mb-8">
-      <a href="/" class="flex items-center gap-3 mb-6">
-        <div class="flex h-11 w-11 items-center justify-center rounded-xl"
-             style="background: linear-gradient(135deg, #E63946 0%, #C41E3A 100%); box-shadow: 0 4px 20px rgba(230,57,70,0.4);">
-          <span class="text-base font-black text-white">R</span>
-        </div>
-        <div>
-          <p class="text-sm font-black uppercase tracking-[0.18em] leading-none" style="color: #F4F4FA;">RestoPro</p>
-          <p class="text-[10px] uppercase tracking-[0.28em] mt-0.5" style="color: #5A5A70;">Panel de gestión</p>
+    <!-- Logo + heading -->
+    <div style="text-align:center; margin-bottom: 2rem;">
+      <a href="/" style="display:inline-flex; align-items:center; gap:0.75rem; text-decoration:none; margin-bottom:1.25rem;">
+        <div class="logo-badge">R</div>
+        <div style="text-align:left;">
+          <p style="font-size:0.875rem; font-weight:900; letter-spacing:0.18em; text-transform:uppercase; color:#F0F0FF; line-height:1;">RestoPro</p>
+          <p style="font-size:0.625rem; letter-spacing:0.28em; text-transform:uppercase; color:#4A4A68; margin-top:0.2rem;">Panel de gestión</p>
         </div>
       </a>
 
-      <h1 class="text-2xl font-black tracking-tight" style="color: #F4F4FA;">Bienvenido de nuevo</h1>
-      <p class="mt-1.5 text-sm" style="color: #9090A8;">
+      <h1 style="font-size:1.625rem; font-weight:900; letter-spacing:-0.03em; color:#F0F0FF; line-height:1.2;">
+        Bienvenido de nuevo
+      </h1>
+      <p style="margin-top:0.5rem; font-size:0.875rem; color:#6B6B8A;">
         ¿Sin cuenta?
-        <a href="/register.html" class="font-semibold transition hover:opacity-80" style="color: #E63946;">Regístrate aquí</a>
+        <a href="/register.html" style="color:#A78BFA; font-weight:600; text-decoration:none;"
+           onmouseover="this.style.color='#C4B5FD'" onmouseout="this.style.color='#A78BFA'">Regístrate aquí</a>
       </p>
     </div>
 
     <!-- Card -->
-    <div class="login-card p-7">
-      <form action="/dashboard.html" method="GET" class="space-y-5">
+    <div class="login-card">
+      <form action="/dashboard.html" method="GET">
 
         <!-- Email -->
-        <div>
-          <label for="email" class="block text-xs font-semibold uppercase tracking-widest mb-2" style="color: #9090A8;">
-            Correo electrónico
-          </label>
+        <div style="margin-bottom:1.25rem;">
+          <label for="email" class="field-label">Correo electrónico</label>
           <input
             id="email"
             name="email"
@@ -135,17 +259,16 @@
             required
             placeholder="gerente@restopro.com"
             value="gerente@restocrm.com"
-            class="login-input"
+            class="field-input"
           >
         </div>
 
         <!-- Password -->
-        <div>
-          <div class="flex items-center justify-between mb-2">
-            <label for="password" class="block text-xs font-semibold uppercase tracking-widest" style="color: #9090A8;">
-              Contraseña
-            </label>
-            <a href="#" class="text-xs font-medium transition hover:opacity-80" style="color: #E63946;">¿Olvidaste tu contraseña?</a>
+        <div style="margin-bottom:1.25rem;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+            <label for="password" class="field-label" style="margin-bottom:0;">Contraseña</label>
+            <a href="#" style="font-size:0.75rem; font-weight:600; color:#8B5CF6; text-decoration:none;"
+               onmouseover="this.style.color='#C4B5FD'" onmouseout="this.style.color='#8B5CF6'">¿Olvidaste tu contraseña?</a>
           </div>
           <input
             id="password"
@@ -154,23 +277,21 @@
             autocomplete="current-password"
             required
             placeholder="••••••••"
-            class="login-input"
+            class="field-input"
           >
         </div>
 
         <!-- Remember me -->
-        <div class="flex items-center gap-2.5">
-          <input id="remember-me" name="remember-me" type="checkbox" class="checkbox-custom">
-          <label for="remember-me" class="text-sm cursor-pointer" style="color: #9090A8;">Mantener sesión iniciada</label>
+        <div style="display:flex; align-items:center; gap:0.625rem; margin-bottom:1.5rem;">
+          <input id="remember-me" name="remember-me" type="checkbox">
+          <label for="remember-me" style="font-size:0.875rem; color:#6B6B8A; cursor:pointer;">
+            Mantener sesión iniciada
+          </label>
         </div>
 
         <!-- Submit -->
-        <button type="submit"
-                class="w-full flex items-center justify-center gap-2 rounded-full py-3 px-6 text-sm font-semibold text-white transition-all duration-200"
-                style="background: #E63946; box-shadow: 0 4px 20px rgba(230,57,70,0.35), inset 0 1px 0 rgba(255,255,255,0.15);"
-                onmouseover="this.style.background='#D62839'; this.style.boxShadow='0 6px 28px rgba(230,57,70,0.5), inset 0 1px 0 rgba(255,255,255,0.15)';"
-                onmouseout="this.style.background='#E63946'; this.style.boxShadow='0 4px 20px rgba(230,57,70,0.35), inset 0 1px 0 rgba(255,255,255,0.15)';">
-          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <button type="submit" class="btn-login">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
             <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
           </svg>
           Entrar al Dashboard
@@ -178,22 +299,22 @@
       </form>
 
       <!-- Divider -->
-      <div class="my-6 flex items-center gap-3">
-        <div class="divider-line flex-1"></div>
-        <span class="text-xs" style="color: #5A5A70;">O continuar con</span>
-        <div class="divider-line flex-1"></div>
+      <div class="divider">
+        <div class="divider-line"></div>
+        <span class="divider-text">O continuar con</span>
+        <div class="divider-line"></div>
       </div>
 
-      <!-- Social buttons -->
-      <div class="grid grid-cols-2 gap-3">
-        <a href="#" class="social-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <!-- Social -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+        <a href="#" class="btn-social">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.908 3.152-1.928 4.176-1.152 1.152-2.94 2.392-5.912 2.392-4.58 0-8.192-3.696-8.192-8.28s3.612-8.28 8.192-8.28c2.48 0 4.312.984 5.656 2.248l2.312-2.312C18.42 2.128 15.756.9 12.48.9 6.48.9 1.44 5.82 1.44 11.82s5.04 10.92 11.04 10.92c3.24 0 5.688-1.068 7.56-3.048 1.944-1.944 2.556-4.668 2.556-6.948 0-.672-.06-1.32-.168-1.92h-8.952z"/>
           </svg>
           Google
         </a>
-        <a href="#" class="social-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <a href="#" class="btn-social">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701z"/>
           </svg>
           Apple
@@ -201,14 +322,14 @@
       </div>
     </div>
 
-    <!-- Footer note -->
-    <p class="mt-6 text-center text-xs" style="color: #5A5A70;">
-      Al iniciar sesión aceptas los
-      <a href="#" class="hover:text-white transition" style="color: #5A5A70; text-decoration: underline;">términos de uso</a>
+    <!-- Footer -->
+    <p style="margin-top:1.5rem; text-align:center; font-size:0.75rem; color:#3A3A55;">
+      Al entrar aceptas los
+      <a href="#" style="color:#3A3A55; text-decoration:underline;">términos de uso</a>
       y la
-      <a href="#" class="hover:text-white transition" style="color: #5A5A70; text-decoration: underline;">política de privacidad</a>.
+      <a href="#" style="color:#3A3A55; text-decoration:underline;">política de privacidad</a>.
     </p>
-
   </div>
+
 </body>
 </html>

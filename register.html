@@ -1,20 +1,26 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full bg-stone-950">
+<html lang="es" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registro Seguro - RestoPro Ultra</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/main.css">
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <style>
     [x-cloak] { display: none !important; }
     .strength-bar { height: 4px; transition: all 0.3s ease; }
-    .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    .glow-violet {
+      box-shadow: 0 0 80px rgba(124,58,237,0.18), 0 0 200px rgba(79,70,229,0.10);
+    }
   </style>
 </head>
-<body class="h-full font-sans antialiased text-white selection:bg-red-600/30"
+<body class="h-full font-sans antialiased selection:bg-violet-600/30"
+      style="background-color:#0a0a14; color:#F0F0FF;"
       x-data="{
-        step: 1, 
+        step: 1,
         generatedCode: '',
         userCode: '',
         timer: 60,
@@ -23,7 +29,7 @@
         showCode: false,
         acceptTerms: false,
         form: { cedula: '', nombre: '', apellidos: '', telefono: '', email: '', password: '' },
-        
+
         get passwordStrength() {
             let p = this.form.password;
             if (!p) return { w: '0%', c: 'bg-transparent', t: '' };
@@ -48,20 +54,20 @@
             this.step = 2;
             this.startTimer();
         },
-        
+
         verifyAndFinish() {
             if(this.userCode === this.generatedCode) {
                 let customers = JSON.parse(localStorage.getItem('restopro_reservations') || '[]');
-                const newUser = { 
-                    ...this.form, 
-                    status: 'Verificado', 
+                const newUser = {
+                    ...this.form,
+                    status: 'Verificado',
                     id: Date.now(),
                     order: 'Nuevo Miembro'
                 };
                 customers.push(newUser);
                 localStorage.setItem('restopro_reservations', JSON.stringify(customers));
                 localStorage.setItem('restopro_current_user', JSON.stringify(newUser));
-                
+
                 alert('¡IDENTIDAD VERIFICADA!\nBienvenido a RestoPro.');
                 window.location.href = '/user-panel.html';
             } else {
@@ -69,122 +75,211 @@
             }
         }
       }">
-  
-  <div class="min-h-full flex flex-col justify-center py-12 px-6 lg:px-8 relative overflow-hidden">
-    <!-- Efecto de iluminación -->
-    <div class="absolute top-0 right-0 h-[600px] w-[600px] bg-red-600/10 rounded-full blur-[120px] -z-10 translate-x-1/2 -translate-y-1/2"></div>
-    
+
+  <!-- Background radial glows -->
+  <div style="position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;">
+    <div style="position:absolute;top:-20%;right:-15%;width:600px;height:600px;background:radial-gradient(circle,rgba(124,58,237,0.13) 0%,transparent 70%);border-radius:50%;"></div>
+    <div style="position:absolute;bottom:-20%;left:-15%;width:500px;height:500px;background:radial-gradient(circle,rgba(79,70,229,0.10) 0%,transparent 70%);border-radius:50%;"></div>
+  </div>
+
+  <div class="min-h-full flex flex-col justify-center py-12 px-6 lg:px-8 relative" style="z-index:1;">
+
+    <!-- Brand header -->
     <div class="sm:mx-auto sm:w-full sm:max-w-md text-center mb-10">
-        <div class="flex justify-center mb-6">
-            <div class="bg-red-600 p-4 rounded-[2rem] shadow-2xl shadow-red-600/30">
-                <svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-            </div>
+      <div class="flex justify-center mb-6">
+        <div style="background:linear-gradient(135deg,#7C3AED,#4F46E5);padding:1rem;border-radius:1.5rem;box-shadow:0 4px 32px rgba(124,58,237,0.45);">
+          <svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
         </div>
-        <h2 class="text-5xl font-black tracking-tighter uppercase italic">Resto<span class="text-red-600">Pro</span></h2>
-        <p class="mt-2 text-stone-500 font-bold uppercase tracking-[0.3em] text-[10px]">Security Authentication System</p>
+      </div>
+      <h2 class="text-5xl font-black tracking-tighter uppercase italic" style="color:#F0F0FF;">
+        Resto<span style="color:#A78BFA;">Pro</span>
+      </h2>
+      <p class="mt-2 font-bold uppercase tracking-[0.3em] text-[10px]" style="color:#4A4A68;">Security Authentication System</p>
     </div>
 
     <!-- PASO 1: REGISTRO -->
-    <div x-show="step === 1" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 translate-y-8" class="sm:mx-auto sm:w-full sm:max-w-lg">
-      <div class="glass-card py-12 px-10 shadow-2xl rounded-[3.5rem]">
-        <form class="space-y-6" @submit.prevent="generateAndSend()">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div x-show="step === 1"
+         x-transition:enter="transition ease-out duration-500"
+         x-transition:enter-start="opacity-0 translate-y-8"
+         class="sm:mx-auto sm:w-full sm:max-w-lg">
+      <div style="background:rgba(18,16,42,0.85);backdrop-filter:blur(24px);border:1px solid rgba(139,92,246,0.18);border-radius:2.5rem;padding:3rem 2.5rem;box-shadow:0 32px 80px rgba(0,0,0,0.5);" class="glow-violet">
+
+        <div class="mb-8">
+          <span class="badge badge-brand mb-3">Crear cuenta nueva</span>
+          <h3 class="text-2xl font-black" style="color:#F0F0FF;">Registro de miembro</h3>
+          <p class="text-sm mt-1" style="color:#8B8BA8;">Completa tus datos para unirte a RestoPro.</p>
+        </div>
+
+        <form class="space-y-5" @submit.prevent="generateAndSend()">
+          <!-- Cédula + Nombre -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="text-[9px] font-black uppercase tracking-widest text-stone-500 mb-2 block">Número de Cédula</label>
-              <input type="text" x-model="form.cedula" required class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold focus:border-red-600 outline-none transition">
+              <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:#8B8BA8;">Número de Cédula</label>
+              <input type="text" x-model="form.cedula" required
+                     class="input"
+                     placeholder="0000000000">
             </div>
             <div>
-              <label class="text-[9px] font-black uppercase tracking-widest text-stone-500 mb-2 block">Nombre</label>
-              <input type="text" x-model="form.nombre" required class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold focus:border-red-600 outline-none transition">
+              <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:#8B8BA8;">Nombre</label>
+              <input type="text" x-model="form.nombre" required
+                     class="input"
+                     placeholder="Tu nombre">
             </div>
           </div>
 
+          <!-- Apellidos -->
           <div>
-            <label class="text-[9px] font-black uppercase tracking-widest text-stone-500 mb-2 block">Apellidos</label>
-            <input type="text" x-model="form.apellidos" required class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold focus:border-red-600 outline-none transition">
+            <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:#8B8BA8;">Apellidos</label>
+            <input type="text" x-model="form.apellidos" required
+                   class="input"
+                   placeholder="Tus apellidos">
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Teléfono + Email -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="text-[9px] font-black uppercase tracking-widest text-stone-500 mb-2 block">Teléfono</label>
-              <input type="tel" x-model="form.telefono" required class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold focus:border-red-600 outline-none transition">
+              <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:#8B8BA8;">Teléfono</label>
+              <input type="tel" x-model="form.telefono" required
+                     class="input"
+                     placeholder="+593 000 000 000">
             </div>
             <div>
-              <label class="text-[9px] font-black uppercase tracking-widest text-stone-500 mb-2 block">Email</label>
-              <input type="email" x-model="form.email" required class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold focus:border-red-600 outline-none transition">
+              <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:#8B8BA8;">Email</label>
+              <input type="email" x-model="form.email" required
+                     class="input"
+                     placeholder="tu@correo.com">
             </div>
           </div>
 
+          <!-- Contraseña -->
           <div class="relative">
-            <label class="text-[9px] font-black uppercase tracking-widest text-stone-500 mb-2 block">Contraseña</label>
-            <input :type="showPass ? 'text' : 'password'" x-model="form.password" required 
-                   class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white font-bold focus:border-red-600 outline-none transition">
-            <button type="button" @click="showPass = !showPass" class="absolute right-4 top-10 text-stone-500 hover:text-white transition">
-                <svg x-show="!showPass" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                <svg x-show="showPass" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
-            </button>
-            <div class="mt-4 px-1">
-                <div class="w-full bg-white/5 rounded-full overflow-hidden mb-2">
-                    <div class="strength-bar" :class="passwordStrength.c" :style="`width: ${passwordStrength.w}`"></div>
-                </div>
-                <p class="text-[8px] font-black uppercase tracking-widest text-stone-500" x-text="passwordStrength.t ? `Seguridad: ${passwordStrength.t}` : 'Ingresa tu clave'"></p>
+            <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:#8B8BA8;">Contraseña</label>
+            <div class="relative">
+              <input :type="showPass ? 'text' : 'password'" x-model="form.password" required
+                     class="input pr-12"
+                     placeholder="Mínimo 10 caracteres">
+              <button type="button" @click="showPass = !showPass"
+                      class="absolute right-4 top-1/2 -translate-y-1/2 transition"
+                      style="color:#4A4A68;" onmouseover="this.style.color='#A78BFA'" onmouseout="this.style.color='#4A4A68'">
+                <svg x-show="!showPass" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+                <svg x-show="showPass" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/>
+                </svg>
+              </button>
+            </div>
+            <!-- Strength bar -->
+            <div class="mt-3 px-1">
+              <div class="w-full rounded-full overflow-hidden mb-2" style="background:rgba(255,255,255,0.06);height:4px;">
+                <div class="strength-bar rounded-full" :class="passwordStrength.c" :style="`width: ${passwordStrength.w}`"></div>
+              </div>
+              <p class="text-[8px] font-black uppercase tracking-widest" style="color:#4A4A68;"
+                 x-text="passwordStrength.t ? `Seguridad: ${passwordStrength.t}` : 'Ingresa tu clave'"></p>
             </div>
           </div>
 
-          <div class="flex items-center gap-3 pt-4">
-            <input type="checkbox" x-model="acceptTerms" class="h-5 w-5 rounded-lg border-white/10 bg-white/5 text-red-600 focus:ring-red-600 transition-all cursor-pointer">
-            <p class="text-[9px] font-bold text-stone-500 uppercase tracking-widest leading-relaxed">Acepto los <a href="#" class="text-white underline decoration-red-600/50">Términos de Servicio</a></p>
+          <!-- Términos -->
+          <div class="flex items-center gap-3 pt-2">
+            <input type="checkbox" x-model="acceptTerms"
+                   class="h-5 w-5 rounded-lg cursor-pointer"
+                   style="accent-color:#7C3AED;">
+            <p class="text-[9px] font-bold uppercase tracking-widest leading-relaxed" style="color:#8B8BA8;">
+              Acepto los
+              <a href="#" class="underline transition" style="color:#A78BFA;">Términos de Servicio</a>
+            </p>
           </div>
-          
-          <button type="submit" 
+
+          <!-- Submit -->
+          <button type="submit"
                   :disabled="!acceptTerms"
-                  :class="!acceptTerms ? 'opacity-30 cursor-not-allowed grayscale' : 'shadow-red-600/30 hover:bg-red-700 hover:scale-[1.02]'"
-                  class="w-full bg-red-600 text-white py-6 rounded-[2.5rem] font-black text-xs uppercase tracking-[0.4em] shadow-2xl transition-all">
-            Solicitar Código
+                  :class="!acceptTerms ? 'opacity-30 cursor-not-allowed' : 'hover:scale-[1.02]'"
+                  class="btn btn-primary btn-lg w-full font-black text-xs uppercase tracking-[0.35em] transition-all">
+            Solicitar Código de Verificación
           </button>
         </form>
 
-        <!-- Botón Acceder para usuarios con cuenta -->
-        <div class="mt-10 text-center border-t border-white/5 pt-10">
-            <p class="text-[9px] font-bold text-stone-500 uppercase tracking-widest mb-4">¿Ya tienes cuenta?</p>
-            <a href="/login.html" class="inline-block w-full py-4 bg-white/5 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] text-white hover:bg-white/10 hover:text-red-600 transition-all">
-                INICIA SESIÓN
-            </a>
+        <!-- Ya tienes cuenta -->
+        <div class="mt-8 pt-8" style="border-top:1px solid rgba(139,92,246,0.12);">
+          <p class="text-center text-[9px] font-bold uppercase tracking-widest mb-4" style="color:#4A4A68;">¿Ya tienes cuenta?</p>
+          <a href="/login.html"
+             class="btn btn-ghost w-full font-black text-[10px] uppercase tracking-[0.25em]">
+            Iniciar Sesión
+          </a>
         </div>
       </div>
     </div>
 
     <!-- PASO 2: VERIFICACIÓN -->
-    <div x-show="step === 2" x-cloak x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 scale-95" class="sm:mx-auto sm:w-full sm:max-w-md">
-      <div class="text-center mb-10">
-        <h2 class="text-4xl font-black tracking-tighter uppercase italic">Verifica <span class="text-emerald-500">Email</span></h2>
-        <p class="text-stone-500 text-[10px] font-bold uppercase tracking-widest mt-2" x-text="`Enviado a ${form.email}`"></p>
+    <div x-show="step === 2" x-cloak
+         x-transition:enter="transition ease-out duration-500"
+         x-transition:enter-start="opacity-0 scale-95"
+         class="sm:mx-auto sm:w-full sm:max-w-md">
+
+      <div class="text-center mb-8">
+        <h2 class="text-4xl font-black tracking-tighter uppercase italic" style="color:#F0F0FF;">
+          Verifica tu <span style="color:#A78BFA;">Email</span>
+        </h2>
+        <p class="text-[10px] font-bold uppercase tracking-widest mt-2" style="color:#8B8BA8;"
+           x-text="`Código enviado a ${form.email}`"></p>
       </div>
 
-      <div class="glass-card py-12 px-10 shadow-2xl rounded-[3.5rem]">
-        <div class="space-y-8">
-            <div class="relative">
-                <input :type="showCode ? 'text' : 'password'" x-model="userCode" maxlength="6" placeholder="000000"
-                       class="w-full bg-white/5 border-2 border-white/10 rounded-[2.5rem] p-8 text-center text-5xl font-black tracking-[0.4em] text-white focus:border-emerald-500 outline-none transition shadow-inner">
-                <button @click="showCode = !showCode" class="absolute right-6 bottom-10 text-stone-600 hover:text-emerald-500 transition">
-                    <svg x-show="!showCode" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                    <svg x-show="showCode" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
-                </button>
-            </div>
+      <div style="background:rgba(18,16,42,0.85);backdrop-filter:blur(24px);border:1px solid rgba(139,92,246,0.18);border-radius:2.5rem;padding:3rem 2.5rem;box-shadow:0 32px 80px rgba(0,0,0,0.5);">
+        <div class="space-y-6">
 
-            <button @click="verifyAndFinish()" class="w-full bg-emerald-600 text-white py-6 rounded-[2.5rem] font-black text-xs uppercase tracking-[0.4em] shadow-2xl shadow-emerald-600/30 hover:bg-emerald-700 transition-all">Verificar Ahora</button>
-            
-            <div class="text-center">
-                <p class="text-[9px] font-bold text-stone-500 uppercase tracking-widest">
-                    <span x-show="timerActive">Reenviar código en <span x-text="timer" class="text-white"></span>s</span>
-                    <button x-show="!timerActive" @click="generateAndSend()" class="text-emerald-500 font-black hover:underline transition-all">Reenviar Código Ahora</button>
-                </p>
-                <button @click="step = 1" class="mt-8 text-[9px] font-black uppercase tracking-widest text-stone-600 hover:text-white transition">← Corregir Datos de Registro</button>
-            </div>
+          <!-- Code input -->
+          <div class="relative">
+            <label class="block text-[9px] font-black uppercase tracking-widest mb-3 text-center" style="color:#8B8BA8;">Introduce el código de 6 dígitos</label>
+            <input :type="showCode ? 'text' : 'password'" x-model="userCode" maxlength="6" placeholder="000000"
+                   class="w-full text-center text-5xl font-black tracking-[0.4em] outline-none transition"
+                   style="background:#12102a;border:2px solid rgba(139,92,246,0.28);border-radius:1.5rem;padding:2rem;color:#F0F0FF;"
+                   onfocus="this.style.borderColor='#7C3AED';this.style.boxShadow='0 0 0 3px rgba(124,58,237,0.18)';"
+                   onblur="this.style.borderColor='rgba(139,92,246,0.28)';this.style.boxShadow='none';">
+            <button @click="showCode = !showCode"
+                    class="absolute right-5 bottom-6 transition"
+                    style="color:#4A4A68;" onmouseover="this.style.color='#A78BFA'" onmouseout="this.style.color='#4A4A68'">
+              <svg x-show="!showCode" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+              <svg x-show="showCode" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Verify button -->
+          <button @click="verifyAndFinish()"
+                  class="btn btn-primary btn-lg w-full font-black text-xs uppercase tracking-[0.35em]">
+            Verificar Identidad
+          </button>
+
+          <!-- Timer / resend -->
+          <div class="text-center space-y-4">
+            <p class="text-[9px] font-bold uppercase tracking-widest" style="color:#8B8BA8;">
+              <span x-show="timerActive">
+                Reenviar código en
+                <span x-text="timer" class="font-black" style="color:#A78BFA;"></span>s
+              </span>
+              <button x-show="!timerActive" @click="generateAndSend()"
+                      class="font-black transition hover:underline" style="color:#A78BFA;">
+                Reenviar Código Ahora
+              </button>
+            </p>
+            <button @click="step = 1"
+                    class="text-[9px] font-black uppercase tracking-widest transition"
+                    style="color:#4A4A68;" onmouseover="this.style.color='#F0F0FF'" onmouseout="this.style.color='#4A4A68'">
+              &larr; Corregir Datos de Registro
+            </button>
+          </div>
+
         </div>
       </div>
     </div>
-  </div>
 
+  </div>
 </body>
 </html>

@@ -1,14 +1,18 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full bg-stone-50">
+<html lang="es" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mi Perfil - RestoPro Experience</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/main.css">
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="h-full font-sans antialiased text-stone-900" 
-      x-data="{ 
+<body class="h-full antialiased"
+      style="background-color:#0a0a14;color:#F0F0FF;font-family:'Inter',system-ui,sans-serif;"
+      x-data="{
         user: null,
         myOrders: [],
         init() {
@@ -18,7 +22,7 @@
                 return;
             }
             this.user = JSON.parse(current);
-            
+
             // Buscar mis facturas por Cédula/RUC
             const allInvoices = JSON.parse(localStorage.getItem('restopro_invoices') || '[]');
             this.myOrders = allInvoices.filter(i => i.customer.ruc === this.user.cedula);
@@ -29,81 +33,145 @@
         }
       }">
 
-  <!-- Navegación Usuario -->
-  <header class="bg-white border-b border-stone-100 py-6 px-8">
-    <div class="container mx-auto flex justify-between items-center">
-      <div class="flex items-center gap-3">
-        <div class="bg-red-600 p-2 rounded-xl text-white">
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+  <!-- Background radial glows -->
+  <div style="position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;">
+    <div style="position:absolute;top:-15%;right:-10%;width:700px;height:700px;background:radial-gradient(circle,rgba(124,58,237,0.11) 0%,transparent 65%);border-radius:50%;"></div>
+    <div style="position:absolute;bottom:-20%;left:-10%;width:500px;height:500px;background:radial-gradient(circle,rgba(79,70,229,0.08) 0%,transparent 65%);border-radius:50%;"></div>
+  </div>
+
+  <!-- Header -->
+  <header style="background:rgba(10,10,20,0.90);border-bottom:1px solid rgba(139,92,246,0.16);backdrop-filter:blur(20px);position:sticky;top:0;z-index:50;">
+    <div class="container mx-auto flex justify-between items-center px-6 py-4">
+      <a href="/index.html" class="flex items-center gap-3 no-underline">
+        <div style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:0.75rem;background:linear-gradient(135deg,#7C3AED,#4F46E5);box-shadow:0 4px 16px rgba(124,58,237,0.4);">
+          <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
         </div>
-        <span class="text-xl font-black tracking-tighter uppercase italic">Resto<span class="text-red-600">Pro</span></span>
-      </div>
-      <button @click="logout()" class="text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-red-600 transition">Cerrar Sesión</button>
+        <span class="text-xl font-black tracking-tighter uppercase italic" style="color:#F0F0FF;">
+          Resto<span style="color:#A78BFA;">Pro</span>
+        </span>
+      </a>
+      <button @click="logout()"
+              class="text-[10px] font-black uppercase tracking-widest transition"
+              style="color:#4A4A68;"
+              onmouseover="this.style.color='#A78BFA'" onmouseout="this.style.color='#4A4A68'">
+        Cerrar Sesión
+      </button>
     </div>
   </header>
 
-  <main class="py-20 px-8">
+  <main class="py-16 px-6 sm:px-8" style="position:relative;z-index:1;">
     <div class="container mx-auto max-w-5xl">
-        <!-- Header Perfil -->
-        <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
-            <div>
-                <span class="text-[10px] font-black uppercase tracking-[0.4em] text-red-600 mb-4 block">Área de Miembro</span>
-                <h1 class="text-5xl font-black tracking-tighter uppercase italic" x-text="`Hola, ${user?.nombre}`"></h1>
-                <p class="text-stone-400 font-medium mt-2" x-text="`Cédula: ${user?.cedula} • ${user?.email}`"></p>
+
+      <!-- Profile header -->
+      <div class="flex flex-col md:flex-row justify-between items-end mb-14 gap-8">
+        <div>
+          <span class="section-label mb-4 block">Área de Miembro</span>
+          <h1 class="text-5xl font-black tracking-tighter uppercase italic" style="color:#F0F0FF;"
+              x-text="`Hola, ${user?.nombre}`"></h1>
+          <p class="mt-2 font-medium" style="color:#8B8BA8;"
+             x-text="`Cédula: ${user?.cedula} • ${user?.email}`"></p>
+        </div>
+        <a href="/index.html#menu" class="btn btn-primary btn-lg">Hacer Nuevo Pedido</a>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+
+        <!-- Left column: Stats -->
+        <div class="lg:col-span-1 space-y-6">
+
+          <!-- Puntos card -->
+          <div style="background:#12102a;border:1px solid rgba(139,92,246,0.14);border-radius:1.75rem;padding:2rem;">
+            <h3 class="text-[10px] font-black uppercase tracking-widest mb-5" style="color:#4A4A68;">Puntos RestoPro</h3>
+            <div class="flex items-center gap-4">
+              <div style="width:48px;height:48px;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.25);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                <span style="color:#A78BFA;font-size:1.25rem;font-weight:900;">★</span>
+              </div>
+              <div>
+                <p class="text-3xl font-black" style="color:#F0F0FF;" x-text="myOrders.length * 10"></p>
+                <p class="text-[9px] font-bold uppercase tracking-widest mt-0.5" style="color:#4A4A68;">Puntos acumulados</p>
+              </div>
             </div>
-            <a href="/index.html#menu" class="btn-primary">Hacer Nuevo Pedido</a>
+          </div>
+
+          <!-- Total gastado card -->
+          <div style="background:linear-gradient(135deg,rgba(124,58,237,0.15) 0%,rgba(79,70,229,0.10) 100%);border:1px solid rgba(139,92,246,0.25);border-radius:1.75rem;padding:2rem;box-shadow:0 20px 60px rgba(0,0,0,0.35);">
+            <h3 class="text-[10px] font-black uppercase tracking-widest mb-3" style="color:#8B8BA8;">Total Gastado</h3>
+            <p class="text-4xl font-black tracking-tighter" style="color:#F0F0FF;"
+               x-text="`$ ${myOrders.reduce((sum, o) => sum + o.total, 0).toFixed(2)}`"></p>
+            <p class="text-[9px] font-bold uppercase tracking-widest mt-4" style="color:#4A4A68;">Inversión en experiencias</p>
+          </div>
+
+          <!-- Quick nav -->
+          <div style="background:#12102a;border:1px solid rgba(139,92,246,0.14);border-radius:1.75rem;padding:1.5rem;">
+            <h3 class="text-[10px] font-black uppercase tracking-widest mb-4" style="color:#4A4A68;">Acceso rápido</h3>
+            <nav class="space-y-1">
+              <a href="/carta-cliente.html" class="sidebar-link">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                Carta del cliente
+              </a>
+              <a href="/index.html" class="sidebar-link">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                Inicio
+              </a>
+              <a href="/dashboard.html" class="sidebar-link">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                Dashboard
+              </a>
+            </nav>
+          </div>
+
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            <!-- Columna Izquierda: Info -->
-            <div class="lg:col-span-1 space-y-8">
-                <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-stone-100">
-                    <h3 class="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-6">Puntos RestoPro</h3>
-                    <div class="flex items-center gap-4">
-                        <div class="h-12 w-12 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 font-black">★</div>
-                        <div>
-                            <p class="text-3xl font-black text-stone-950" x-text="myOrders.length * 10"></p>
-                            <p class="text-[9px] font-bold text-stone-400 uppercase">Puntos acumulados</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-stone-950 p-8 rounded-[2.5rem] shadow-2xl text-white">
-                    <h3 class="text-[10px] font-black uppercase tracking-widest text-stone-500 mb-4">Total Gastado</h3>
-                    <p class="text-4xl font-black tracking-tighter" x-text="`$ ${myOrders.reduce((sum, o) => sum + o.total, 0).toFixed(2)}`"></p>
-                    <p class="text-[9px] font-bold text-stone-500 uppercase mt-4">Inversión en experiencias</p>
-                </div>
-            </div>
+        <!-- Right column: Order history -->
+        <div class="lg:col-span-2">
+          <h3 class="text-sm font-black uppercase tracking-widest mb-8 italic" style="color:#F0F0FF;">Mis Pedidos Recientes</h3>
 
-            <!-- Columna Derecha: Historial -->
-            <div class="lg:col-span-2">
-                <h3 class="text-sm font-black uppercase tracking-widest text-stone-900 mb-8 italic">Mis Pedidos Recientes</h3>
-                
-                <div class="space-y-4">
-                    <template x-for="order in myOrders" :key="order.ref">
-                        <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-stone-100 hover:shadow-md transition-all group">
-                            <div class="flex justify-between items-start mb-4">
-                                <div>
-                                    <p class="text-[10px] font-black text-red-600 uppercase tracking-widest" x-text="order.ref"></p>
-                                    <p class="text-xs font-bold text-stone-400" x-text="order.date"></p>
-                                </div>
-                                <span class="text-xl font-black text-stone-900" x-text="`$ ${order.total.toFixed(2)}`"></span>
-                            </div>
-                            <div class="flex gap-2 flex-wrap">
-                                <template x-for="item in order.items">
-                                    <span class="text-[9px] font-bold bg-stone-50 text-stone-500 px-3 py-1 rounded-full uppercase" x-text="`${item.qty}x ${item.name}`"></span>
-                                </template>
-                            </div>
-                            <button class="mt-6 text-[9px] font-black uppercase tracking-widest text-stone-300 group-hover:text-red-600 transition-colors">Descargar Factura PDF</button>
-                        </div>
-                    </template>
-
-                    <div x-show="myOrders.length === 0" class="py-20 text-center bg-white rounded-[3rem] border-2 border-dashed border-stone-100">
-                        <p class="text-stone-300 font-black uppercase text-xs tracking-widest">Aún no has realizado pedidos</p>
-                    </div>
+          <div class="space-y-4">
+            <template x-for="order in myOrders" :key="order.ref">
+              <div style="background:#12102a;border:1px solid rgba(139,92,246,0.14);border-radius:1.75rem;padding:2rem;transition:all 0.25s ease;"
+                   class="group"
+                   onmouseover="this.style.borderColor='rgba(139,92,246,0.30)';this.style.boxShadow='0 16px 48px rgba(0,0,0,0.4)';"
+                   onmouseout="this.style.borderColor='rgba(139,92,246,0.14)';this.style.boxShadow='none';">
+                <div class="flex justify-between items-start mb-4">
+                  <div>
+                    <p class="text-[10px] font-black uppercase tracking-widest" style="color:#7C3AED;" x-text="order.ref"></p>
+                    <p class="text-xs font-bold mt-1" style="color:#8B8BA8;" x-text="order.date"></p>
+                  </div>
+                  <span class="text-xl font-black" style="color:#F0F0FF;" x-text="`$ ${order.total.toFixed(2)}`"></span>
                 </div>
+                <div class="flex gap-2 flex-wrap">
+                  <template x-for="item in order.items">
+                    <span class="badge badge-neutral" x-text="`${item.qty}x ${item.name}`"></span>
+                  </template>
+                </div>
+                <button class="mt-5 text-[9px] font-black uppercase tracking-widest transition"
+                        style="color:#4A4A68;"
+                        onmouseover="this.style.color='#A78BFA'" onmouseout="this.style.color='#4A4A68'">
+                  Descargar Factura PDF
+                </button>
+              </div>
+            </template>
+
+            <!-- Empty state -->
+            <div x-show="myOrders.length === 0"
+                 class="py-20 text-center rounded-[2rem]"
+                 style="border:2px dashed rgba(139,92,246,0.16);">
+              <div style="width:56px;height:56px;background:rgba(124,58,237,0.10);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:#4A4A68;">
+                  <path stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+              </div>
+              <p class="font-black uppercase text-xs tracking-widest" style="color:#4A4A68;">Aún no has realizado pedidos</p>
+              <a href="/carta-cliente.html" class="btn btn-primary btn-sm mt-6 inline-flex">
+                Ver carta del cliente
+              </a>
             </div>
+          </div>
         </div>
+
+      </div>
     </div>
   </main>
 
