@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full">
+<html lang="es" class="h-full scroll-pt-20">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/src/main.css">
+  <link rel="stylesheet" href="./src/main.css">
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <style>
     [x-cloak] { display: none !important; }
@@ -41,7 +41,8 @@
         startTimer() {
             this.timer = 60;
             this.timerActive = true;
-            let interval = setInterval(() => {
+            let interval = setInterval(() =>
+ {
                 if (this.timer > 0) this.timer--;
                 else { this.timerActive = false; clearInterval(interval); }
             }, 1000);
@@ -69,12 +70,35 @@
                 localStorage.setItem('restopro_current_user', JSON.stringify(newUser));
 
                 alert('¡IDENTIDAD VERIFICADA!\nBienvenido a RestoPro.');
-                window.location.href = '/user-panel.html';
+                window.location.href = './user-panel.html';
             } else {
                 alert('Código incorrecto. Revise su código de seguridad.');
             }
         }
       }">
+
+  <div class="design3-shell fixed left-0 right-0 top-0 z-[60] border-b border-slate-200/70 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-xl">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-3">
+      <a href="./index.html" class="flex min-w-0 items-center gap-2 text-slate-950">
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-rose-600 to-amber-500 text-xs font-black text-white shadow-lg shadow-rose-500/20">D3</span>
+        <span class="hidden min-w-0 sm:block">
+          <span class="block truncate text-sm font-black uppercase tracking-[0.16em]">Restaurante Connect</span>
+          <span class="block text-xs font-semibold text-slate-500">Design 3 UI/UX</span>
+        </span>
+      </a>
+      <nav class="flex items-center gap-1 overflow-x-auto text-xs font-black text-slate-600 sm:text-sm">
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./dashboard.html">Dashboard</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./pos.html">POS</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./kitchen.html">Cocina</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./reservations.html">Reservas</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./inventory.html">Inventario</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./billing.html">Caja</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./crm.html">CRM</a>
+        <a class="rounded-full bg-slate-950 px-3 py-2 text-white hover:bg-slate-800" href="./login.html">Login</a>
+      </nav>
+    </div>
+  </div>
+
 
   <!-- Background radial glows -->
   <div style="position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;">
@@ -205,7 +229,7 @@
         <!-- Ya tienes cuenta -->
         <div class="mt-8 pt-8" style="border-top:1px solid rgba(139,92,246,0.12);">
           <p class="text-center text-[9px] font-bold uppercase tracking-widest mb-4" style="color:#4A4A68;">¿Ya tienes cuenta?</p>
-          <a href="/login.html"
+          <a href="./login.html"
              class="btn btn-ghost w-full font-black text-[10px] uppercase tracking-[0.25em]">
             Iniciar Sesión
           </a>

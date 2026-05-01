@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full bg-stone-100">
+<html lang="es" class="h-full bg-stone-100 scroll-pt-20">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reservas y Clientes Pro - RestoPro</title>
-  <link rel="stylesheet" href="/src/main.css">
+  <link rel="stylesheet" href="./src/main.css">
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <style>
     [x-cloak] { display: none !important; }
@@ -25,7 +25,8 @@
     // Función para obtener reservas filtradas por Cédula
     get filteredReservations() {
         if (this.searchQuery.trim() === '') return this.reservations;
-        return this.reservations.filter(res => 
+        return this.reservations.filter(res =>
+ 
             res.cedula.toLowerCase().includes(this.searchQuery.toLowerCase())
         );
     },
@@ -113,6 +114,29 @@
         }
     }
 }">
+
+  <div class="design3-shell fixed left-0 right-0 top-0 z-[60] border-b border-slate-200/70 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-xl">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-3">
+      <a href="./index.html" class="flex min-w-0 items-center gap-2 text-slate-950">
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-rose-600 to-amber-500 text-xs font-black text-white shadow-lg shadow-rose-500/20">D3</span>
+        <span class="hidden min-w-0 sm:block">
+          <span class="block truncate text-sm font-black uppercase tracking-[0.16em]">Restaurante Connect</span>
+          <span class="block text-xs font-semibold text-slate-500">Design 3 UI/UX</span>
+        </span>
+      </a>
+      <nav class="flex items-center gap-1 overflow-x-auto text-xs font-black text-slate-600 sm:text-sm">
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./dashboard.html">Dashboard</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./pos.html">POS</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./kitchen.html">Cocina</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./reservations.html">Reservas</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./inventory.html">Inventario</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./billing.html">Caja</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./crm.html">CRM</a>
+        <a class="rounded-full bg-slate-950 px-3 py-2 text-white hover:bg-slate-800" href="./login.html">Login</a>
+      </nav>
+    </div>
+  </div>
+
   
   <div class="flex h-full">
     <!-- Sidebar -->
@@ -123,12 +147,12 @@
           <span class="ml-3 text-xl font-black text-stone-900 tracking-tighter uppercase">Resto<span class="text-red-600">Pro</span></span>
         </div>
         <nav class="space-y-1">
-          <a href="/dashboard.html" class="flex items-center px-4 py-3 text-sm font-bold text-stone-400 hover:bg-stone-50 rounded-xl transition">Dashboard</a>
-          <a href="/reservations.html" class="flex items-center px-4 py-3 text-sm font-bold text-red-600 bg-red-50 rounded-xl">Reservas</a>
-          <a href="/menu-management.html" class="flex items-center px-4 py-3 text-sm font-bold text-stone-400 hover:bg-stone-50 rounded-xl transition">La Carta</a>
+          <a href="./dashboard.html" class="flex items-center px-4 py-3 text-sm font-bold text-stone-400 hover:bg-stone-50 rounded-xl transition">Dashboard</a>
+          <a href="./reservations.html" class="flex items-center px-4 py-3 text-sm font-bold text-red-600 bg-red-50 rounded-xl">Reservas</a>
+          <a href="./menu-management.html" class="flex items-center px-4 py-3 text-sm font-bold text-stone-400 hover:bg-stone-50 rounded-xl transition">La Carta</a>
         </nav>
         <div class="pt-4 mt-auto border-t border-stone-100">
-          <a href="/index.html" class="flex items-center px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 rounded-xl transition group">
+          <a href="./index.html" class="flex items-center px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 rounded-xl transition group">
             <svg class="mr-3 h-5 w-5 text-red-400 group-hover:text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
             Ver Sitio Público
           </a>

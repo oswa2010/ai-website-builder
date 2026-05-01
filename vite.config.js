@@ -10,6 +10,7 @@ import { resolve } from 'path'
  */
 export default defineConfig({
   plugins: [tailwindcss()],
+  base: './',
 
   // Root: project root (default)
   root: '.',
@@ -40,6 +41,7 @@ export default defineConfig({
         'menu-management': resolve(__dirname, 'menu-management.html'),
         reservations:     resolve(__dirname, 'reservations.html'),
         customers:        resolve(__dirname, 'customers.html'),
+        crm:              resolve(__dirname, 'crm.html'),
         'user-panel':     resolve(__dirname, 'user-panel.html'),
       },
     },

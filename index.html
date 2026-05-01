@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" class="scroll-smooth">
+<html lang="es" class="scroll-smooth scroll-pt-20">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,13 +9,13 @@
   <meta property="og:type" content="website">
   <meta property="og:title" content="Restaurante Connect | App operativa para restaurante">
   <meta property="og:description" content="Dashboard responsive para administrar pedidos, menu, inventario, facturacion y KPIs desde una experiencia movil.">
-  <meta property="og:image" content="/images/desserts/tiramisu-copa.jpg">
+  <meta property="og:image" content="./images/desserts/tiramisu-copa.jpg">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="icon" href="/favicon.ico">
+  <link rel="icon" href="./favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/src/main.css">
+  <link rel="stylesheet" href="./src/main.css">
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
   <style>
     [x-cloak] { display: none !important; }
@@ -23,6 +23,30 @@
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 antialiased" x-data="restaurantConnect()">
+
+  <div class="design3-shell fixed left-0 right-0 top-0 z-[60] border-b border-slate-200/70 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-xl">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-3">
+      <a href="./index.html" class="flex min-w-0 items-center gap-2 text-slate-950">
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-rose-600 to-amber-500 text-xs font-black text-white shadow-lg shadow-rose-500/20">D3</span>
+        <span class="hidden min-w-0 sm:block">
+          <span class="block truncate text-sm font-black uppercase tracking-[0.16em]">Restaurante Connect</span>
+          <span class="block text-xs font-semibold text-slate-500">Design 3 UI/UX</span>
+        </span>
+      </a>
+      <nav class="flex items-center gap-1 overflow-x-auto text-xs font-black text-slate-600 sm:text-sm">
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./dashboard.html">Dashboard</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./pos.html">POS</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./kitchen.html">Cocina</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./reservations.html">Reservas</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./inventory.html">Inventario</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./billing.html">Caja</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./crm.html">CRM</a>
+        <a class="rounded-full bg-slate-950 px-3 py-2 text-white hover:bg-slate-800" href="./login.html">Login</a>
+      </nav>
+    </div>
+  </div>
+
+
   <div class="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(239,68,68,0.18),transparent_32%),radial-gradient(circle_at_top_right,rgba(245,158,11,0.16),transparent_28%),linear-gradient(180deg,#020617_0%,#0f172a_48%,#f8fafc_48%,#f8fafc_100%)]">
     <header class="sticky top-0 z-40 border-b border-white/10 bg-slate-950/85 backdrop-blur-xl">
       <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
@@ -40,7 +64,7 @@
           <a href="#inventario" class="hover:text-white">Inventario</a>
         </nav>
         <div class="flex items-center gap-2">
-          <a href="/login.html" class="hidden rounded-md border border-white/15 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-white/30 hover:bg-white/10 sm:inline-flex">Entrar</a>
+          <a href="./login.html" class="hidden rounded-md border border-white/15 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-white/30 hover:bg-white/10 sm:inline-flex">Entrar</a>
           <a href="#probar" class="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-600/20 transition hover:bg-red-700">Probar app</a>
         </div>
       </div>
@@ -54,7 +78,7 @@
           <p class="mt-6 max-w-2xl text-base leading-relaxed text-slate-300 md:text-lg">Roles, pedidos en tiempo real, menu, caja, KPIs e inventario en una sola interfaz. Esta version corre en el navegador con Vite + Tailwind y simula flujos clave para validar la experiencia antes de llevarla a React Native.</p>
           <div class="mt-8 flex flex-col gap-3 sm:flex-row">
             <a href="#probar" class="rounded-md bg-red-600 px-6 py-3 text-center font-semibold text-white transition hover:bg-red-700">Abrir demo interactiva</a>
-            <a href="/dashboard.html" class="rounded-md border border-white/15 px-6 py-3 text-center font-semibold text-white transition hover:bg-white/10">Ver dashboard completo</a>
+            <a href="./dashboard.html" class="rounded-md border border-white/15 px-6 py-3 text-center font-semibold text-white transition hover:bg-white/10">Ver dashboard completo</a>
           </div>
           <div class="mt-10 grid max-w-2xl grid-cols-3 gap-3">
             <div class="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
@@ -227,7 +251,7 @@
                     <span class="font-black" x-text="closedOrders"></span>
                   </div>
                 </div>
-                <a href="/billing.html" class="mt-6 inline-flex w-full justify-center rounded-md bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700">Ver modulo de caja</a>
+                <a href="./billing.html" class="mt-6 inline-flex w-full justify-center rounded-md bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700">Ver modulo de caja</a>
               </div>
 
               <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -272,7 +296,7 @@
                   <p class="mt-3 text-sm leading-relaxed text-slate-600" x-text="dish.description"></p>
                   <div class="mt-5 flex items-center justify-between">
                     <span class="rounded-full px-3 py-1 text-xs font-bold" :class="dish.available ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'" x-text="dish.available ? 'Disponible' : 'Pausado'"></span>
-                    <a href="/menu-management.html" class="text-sm font-bold text-red-600 hover:text-red-700">Editar</a>
+                    <a href="./menu-management.html" class="text-sm font-bold text-red-600 hover:text-red-700">Editar</a>
                   </div>
                 </div>
               </article>
@@ -288,7 +312,7 @@
               <p class="text-sm font-black uppercase tracking-[0.22em] text-red-600">Inventario</p>
               <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Alertas de stock antes de que cocina se quede sin producto.</h2>
               <p class="mt-4 text-base leading-relaxed text-slate-700">Los insumos criticos aparecen primero, con consumo estimado por pedidos. Para una version productiva, esto se conecta a PostgreSQL y registra movimientos por receta.</p>
-              <a href="/inventory.html" class="mt-8 inline-flex rounded-md bg-slate-900 px-6 py-3 font-semibold text-white transition hover:bg-slate-800">Abrir inventario completo</a>
+              <a href="./inventory.html" class="mt-8 inline-flex rounded-md bg-slate-900 px-6 py-3 font-semibold text-white transition hover:bg-slate-800">Abrir inventario completo</a>
             </div>
             <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6">
               <div class="grid gap-4">
@@ -338,7 +362,7 @@
     </main>
 
     <footer class="bg-slate-950 px-4 py-8 text-center text-sm text-slate-500 sm:px-6 lg:px-8">
-      <p>Restaurante Connect demo. Modulos disponibles: <a class="font-semibold text-slate-300 hover:text-white" href="/pos.html">POS</a>, <a class="font-semibold text-slate-300 hover:text-white" href="/kitchen.html">Cocina</a>, <a class="font-semibold text-slate-300 hover:text-white" href="/reservations.html">Reservas</a>, <a class="font-semibold text-slate-300 hover:text-white" href="/customers.html">Clientes</a>.</p>
+      <p>Restaurante Connect demo. Modulos disponibles: <a class="font-semibold text-slate-300 hover:text-white" href="./pos.html">POS</a>, <a class="font-semibold text-slate-300 hover:text-white" href="./kitchen.html">Cocina</a>, <a class="font-semibold text-slate-300 hover:text-white" href="./reservations.html">Reservas</a>, <a class="font-semibold text-slate-300 hover:text-white" href="./customers.html">Clientes</a>.</p>
     </footer>
   </div>
 
@@ -354,7 +378,7 @@
             name: 'Administrador',
             scope: 'Control total',
             description: 'Gestiona usuarios, permisos, menu, promociones, reportes, facturacion e inventario completo.',
-            link: '/dashboard.html',
+            link: './dashboard.html',
             actions: [
               { icon: 'U', title: 'Usuarios y roles', text: 'Alta, baja y permisos por perfil operativo.' },
               { icon: 'M', title: 'Menu y precios', text: 'Platos, categorias, disponibilidad y descuentos.' },
@@ -366,7 +390,7 @@
             name: 'Gerente / Chef',
             scope: 'Operacion y cocina',
             description: 'Prioriza comandas, asigna pedidos, ajusta estados y controla consumo de ingredientes.',
-            link: '/kitchen.html',
+            link: './kitchen.html',
             actions: [
               { icon: 'P', title: 'Pedidos en tiempo real', text: 'Vista por prioridad, mesa, tiempo y estado.' },
               { icon: 'C', title: 'Control de cocina', text: 'Preparacion, listo para servir y bloqueo de platos.' },
@@ -378,7 +402,7 @@
             name: 'Personal de mesa',
             scope: 'Sala y cliente',
             description: 'Toma pedidos, modifica comandas, consulta cuenta y envia ordenes a cocina desde movil.',
-            link: '/pos.html',
+            link: './pos.html',
             actions: [
               { icon: 'T', title: 'Tomar pedido', text: 'Agrega platos, notas de cocina y numero de mesa.' },
               { icon: 'F', title: 'Factura cliente', text: 'Consulta subtotales, descuentos, impuestos y cierre.' },
@@ -390,7 +414,7 @@
             name: 'Caja / Facturacion',
             scope: 'Cobros e informes',
             description: 'Revisa ventas, tickets, metodos de pago, descuentos y cierres por turno.',
-            link: '/billing.html',
+            link: './billing.html',
             actions: [
               { icon: '$', title: 'Cobros', text: 'Efectivo, tarjeta, transferencias y pagos mixtos.' },
               { icon: '%', title: 'Descuentos', text: 'Promociones autorizadas con trazabilidad por rol.' },
@@ -406,9 +430,9 @@
           { id: 105, table: 'Mesa 12', customer: 'Sofia Marin', status: 'Nuevo', items: 'Menu degustacion, milhojas de crema, cafe', total: 84.0, progress: 25 }
         ],
         dishes: [
-          { name: 'Tiramisu en copa', category: 'Postre', price: 8.5, available: true, image: '/images/desserts/tiramisu-copa.jpg', alt: 'Tiramisu servido en copa', description: 'Crema de mascarpone, cafe suave y cacao amargo.' },
-          { name: 'Coulant de chocolate', category: 'Postre', price: 9.0, available: true, image: '/images/desserts/coulant-chocolate.jpg', alt: 'Coulant de chocolate con centro fluido', description: 'Bizcocho tibio con interior fundente y toque de sal.' },
-          { name: 'Cheesecake frutos rojos', category: 'Postre', price: 8.0, available: true, image: '/images/desserts/cheesecake-frutos-rojos.jpg', alt: 'Cheesecake con frutos rojos', description: 'Base crujiente, crema ligera y salsa de frutos rojos.' }
+          { name: 'Tiramisu en copa', category: 'Postre', price: 8.5, available: true, image: './images/desserts/tiramisu-copa.jpg', alt: 'Tiramisu servido en copa', description: 'Crema de mascarpone, cafe suave y cacao amargo.' },
+          { name: 'Coulant de chocolate', category: 'Postre', price: 9.0, available: true, image: './images/desserts/coulant-chocolate.jpg', alt: 'Coulant de chocolate con centro fluido', description: 'Bizcocho tibio con interior fundente y toque de sal.' },
+          { name: 'Cheesecake frutos rojos', category: 'Postre', price: 8.0, available: true, image: './images/desserts/cheesecake-frutos-rojos.jpg', alt: 'Cheesecake con frutos rojos', description: 'Base crujiente, crema ligera y salsa de frutos rojos.' }
         ],
         inventory: [
           { name: 'Harina italiana', owner: 'Cocina caliente', stock: 12, min: 10, capacity: 40, unit: ' kg' },

@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full">
+<html lang="es" class="h-full scroll-pt-20">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Iniciar Sesión — RestoPro</title>
-  <link rel="icon" href="/favicon.ico">
+  <link rel="icon" href="./favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/src/main.css">
+  <link rel="stylesheet" href="./src/main.css">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -218,6 +218,30 @@
 </head>
 
 <body>
+
+  <div class="design3-shell fixed left-0 right-0 top-0 z-[60] border-b border-slate-200/70 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-xl">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-3">
+      <a href="./index.html" class="flex min-w-0 items-center gap-2 text-slate-950">
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-rose-600 to-amber-500 text-xs font-black text-white shadow-lg shadow-rose-500/20">D3</span>
+        <span class="hidden min-w-0 sm:block">
+          <span class="block truncate text-sm font-black uppercase tracking-[0.16em]">Restaurante Connect</span>
+          <span class="block text-xs font-semibold text-slate-500">Design 3 UI/UX</span>
+        </span>
+      </a>
+      <nav class="flex items-center gap-1 overflow-x-auto text-xs font-black text-slate-600 sm:text-sm">
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./dashboard.html">Dashboard</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./pos.html">POS</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./kitchen.html">Cocina</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./reservations.html">Reservas</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./inventory.html">Inventario</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./billing.html">Caja</a>
+        <a class="rounded-full px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="./crm.html">CRM</a>
+        <a class="rounded-full bg-slate-950 px-3 py-2 text-white hover:bg-slate-800" href="./login.html">Login</a>
+      </nav>
+    </div>
+  </div>
+
+
   <!-- Decorative orbs -->
   <div class="orb" style="width:320px;height:320px;background:rgba(124,58,237,0.18);top:-80px;left:-80px;"></div>
   <div class="orb" style="width:260px;height:260px;background:rgba(79,70,229,0.14);bottom:-60px;right:-60px;"></div>
@@ -239,14 +263,14 @@
       </h1>
       <p style="margin-top:0.5rem; font-size:0.875rem; color:#6B6B8A;">
         ¿Sin cuenta?
-        <a href="/register.html" style="color:#A78BFA; font-weight:600; text-decoration:none;"
+        <a href="./register.html" style="color:#A78BFA; font-weight:600; text-decoration:none;"
            onmouseover="this.style.color='#C4B5FD'" onmouseout="this.style.color='#A78BFA'">Regístrate aquí</a>
       </p>
     </div>
 
     <!-- Card -->
     <div class="login-card">
-      <form action="/dashboard.html" method="GET">
+      <form action="./dashboard.html" method="GET">
 
         <!-- Email -->
         <div style="margin-bottom:1.25rem;">
