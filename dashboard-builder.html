@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RestaurantPOS - Dashboard Builder</title>
+  <!-- AdminLTE CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/css/adminlte.min.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #8B2635;
+      --primary-dark: #5C1A1A;
+      --secondary: #D4A84B;
+      --accent: #2E7D32;
+      --bg-light: #FAF8F5;
+    }
+    body { font-family: 'Source Sans Pro', sans-serif; background: var(--bg-light); }
+    .brand-link { background: var(--primary) !important; }
+    .main-sidebar { background: linear-gradient(180deg, var(--primary-dark) 0%, var(--primary) 100%); }
+    .nav-item.active { background: var(--secondary) !important; border-radius: 8px; }
+    .content-header { padding: 20px 30px 0; }
+    .card { border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; }
+    .card-header { background: white; border-bottom: 2px solid var(--primary); font-weight: 600; }
+    .btn-primary { background: var(--primary); border-color: var(--primary); }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .table-striped tbody tr:nth-of-type(odd) { background: #faf8f5; }
+    .badge-status { padding: 5px 10px; border-radius: 20px; font-size: 12px; }
+    .badge-libre { background: #d4edda; color: #155724; }
+    .badge-ocupada { background: #f8d7da; color: #721c24; }
+    .badge-reservada { background: #fff3cd; color: #856404; }
+    .modal-content { border-radius: 16px; }
+    .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 0.2rem rgba(139, 38, 53, 0.25); }
+    .stats-card { border-left: 4px solid; }
+    .stats-card.blue { border-color: #007bff; }
+    .stats-card.green { border-color: #28a745; }
+    .stats-card.red { border-color: #dc3545; }
+    .stats-card.yellow { border-color: #ffc107; }
+    .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+    .action-buttons { display: flex; gap: 5px; }
+    .search-box { max-width: 300px; }
+    /* Animations */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .card { animation: fadeIn 0.3s ease-out; }
+    /* Quick Stats */
+    .quick-stat { display: flex; align-items: center; padding: 15px; background: white; border-radius: 10px; margin-bottom: 10px; }
+    .quick-stat-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 15px; }
+  </style>
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+
+  <!-- Navbar -->
+  <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <ul class="navbar-nav">
+      <li class="nav-item"><a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a></li>
+      <li class="nav-item d-none d-sm-inline-block"><a href="#" class="nav-link">Dashboard</a></li>
+    </ul>
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-bell"></i><span class="badge badge-warning navbar-badge">3</span></a></li>
+      <li class="nav-item dropdown">
+        <a class="nav-link" data-toggle="dropdown" href="#">
+          <div class="user-avatar">A</div>
+        </a>
+        <div class="dropdown-menu dropdown-menu-right">
+          <a href="#" class="dropdown-item"><i class="fas fa-user mr-2"></i>Perfil</a>
+          <a href="#" class="dropdown-item"><i class="fas fa-cog mr-2"></i>Configuración</a>
+          <div class="dropdown-divider"></div>
+          <a href="#" class="dropdown-item"><i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión</a>
+        </div>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Sidebar -->
+  <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <a href="#" class="brand-link">
+      <i class="fas fa-utensils ml-3 mr-2"></i>
+      <span class="brand-text font-weight-light">RestaurantPOS</span>
+    </a>
+    <div class="sidebar">
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+          <li class="nav-item">
+            <a href="#panel-dashboard" class="nav-link active" onclick="showPanel('dashboard')">
+              <i class="nav-icon fas fa-tachometer-alt"></i>
+              <p>Dashboard</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#panel-mesas" class="nav-link" onclick="showPanel('mesas')">
+              <i class="nav-icon fas fa-chair"></i>
+              <p>Mesas</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#panel-menu" class="nav-link" onclick="showPanel('menu')">
+              <i class="nav-icon fas fa-utensils"></i>
+              <p>Menú</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#panel-pedidos" class="nav-link" onclick="showPanel('pedidos')">
+              <i class="nav-icon fas fa-receipt"></i>
+              <p>Pedidos</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#panel-inventario" class="nav-link" onclick="showPanel('inventario')">
+              <i class="nav-icon fas fa-boxes"></i>
+              <p>Inventario</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#panel-personal" class="nav-link" onclick="showPanel('personal')">
+              <i class="nav-icon fas fa-users"></i>
+              <p>Personal</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#panel-reportes" class="nav-link" onclick="showPanel('reportes')">
+              <i class="nav-icon fas fa-chart-bar"></i>
+              <p>Reportes</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#panel-reservas" class="nav-link" onclick="showPanel('reservas')">
+              <i class="nav-icon fas fa-calendar-alt"></i>
+              <p>Reservas</p>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Content Wrapper -->
+  <div class="content-wrapper">
+    <!-- Dashboard Panel -->
+    <div id="panel-dashboard" class="content">
+      <div class="content-header">
+        <h1 class="m-0">Dashboard <small>Resumen del restaurante</small></h1>
+      </div>
+      <div class="content-fluid px-4">
+        <!-- Stats Cards -->
+        <div class="row">
+          <div class="col-lg-3 col-6">
+            <div class="card stats-card blue">
+              <div class="card-body">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <h3 class="font-weight-bold mb-0">S/ 3,450</h3>
+                    <p class="text-muted">Ventas Hoy</p>
+                  </div>
+                  <div class="quick-stat-icon bg-primary"><i class="fas fa-dollar-sign text-white"></i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-3 col-6">
+            <div class="card stats-card green">
+              <div class="card-body">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <h3 class="font-weight-bold mb-0">28</h3>
+                    <p class="text-muted">Pedidos</p>
+                  </div>
+                  <div class="quick-stat-icon bg-success"><i class="fas fa-receipt text-white"></i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-3 col-6">
+            <div class="card stats-card yellow">
+              <div class="card-body">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <h3 class="font-weight-bold mb-0">7/10</h3>
+                    <p class="text-muted">Mesas</p>
+                  </div>
+                  <div class="quick-stat-icon bg-warning"><i class="fas fa-chair text-white"></i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-3 col-6">
+            <div class="card stats-card red">
+              <div class="card-body">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <h3 class="font-weight-bold mb-0">5</h3>
+                    <p class="text-muted">Pendientes</p>
+                  </div>
+                  <div class="quick-stat-icon bg-danger"><i class="fas fa-clock text-white"></i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="row">
+          <div class="col-md-8">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-list mr-2"></i>Pedidos Recientes</h3>
+              </div>
+              <div class="card-body table-responsive p-0">
+                <table class="table table-striped table-hover">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Mesa</th>
+                      <th>Estado</th>
+                      <th>Total</th>
+                      <th>Hora</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>#001</td>
+                      <td>Mesa 5</td>
+                      <td><span class="badge badge-status badge-libre">Entregado</span></td>
+                      <td>S/ 85.00</td>
+                      <td>14:30</td>
+                      <td><button class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></button></td>
+                    </tr>
+                    <tr>
+                      <td>#002</td>
+                      <td>Mesa 2</td>
+                      <td><span class="badge badge-status badge-reservada">Preparando</span></td>
+                      <td>S/ 120.00</td>
+                      <td>14:25</td>
+                      <td><button class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></button></td>
+                    </tr>
+                    <tr>
+                      <td>#003</td>
+                      <td>Mesa 8</td>
+                      <td><span class="badge badge-status badge-ocupada">Pendiente</span></td>
+                      <td>S/ 65.00</td>
+                      <td>14:20</td>
+                      <td><button class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-chart-pie mr-2"></i>Por Categoría</h3>
+              </div>
+              <div class="card-body">
+                <div class="progress mb-3">
+                  <div class="progress-bar bg-primary" style="width: 40%">Platos 40%</div>
+                </div>
+                <div class="progress mb-3">
+                  <div class="progress-bar bg-success" style="width: 25%">Bebidas 25%</div>
+                </div>
+                <div class="progress mb-3">
+                  <div class="progress-bar bg-warning" style="width: 20%">Postres 20%</div>
+                </div>
+                <div class="progress mb-3">
+                  <div class="progress-bar bg-info" style="width: 15%">A la Carta 15%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mesas Panel -->
+    <div id="panel-mesas" class="content" style="display:none">
+      <div class="content-header">
+        <h1 class="m-0">Gestión de Mesas</h1>
+      </div>
+      <div class="content-fluid px-4">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <input type="text" class="form-control search-box" placeholder="Buscar mesa..." id="search-mesa">
+          </div>
+          <div class="col-md-6 text-right">
+            <button class="btn btn-primary" onclick="openModal('mesa')"><i class="fas fa-plus mr-2"></i>Nueva Mesa</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body table-responsive p-0">
+            <table class="table table-hover" id="tabla-mesas">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Número</th>
+                  <th>Capacidad</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1</td>
+                  <td>Mesa 1</td>
+                  <td>4 personas</td>
+                  <td><span class="badge badge-status badge-libre">Libre</span></td>
+                  <td class="action-buttons">
+                    <button class="btn btn-sm btn-warning" onclick="editItem('mesa', 1)"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteItem('mesa', 1)"><i class="fas fa-trash"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>Mesa 2</td>
+                  <td>6 personas</td>
+                  <td><span class="badge badge-status badge-ocupada">Ocupada</span></td>
+                  <td class="action-buttons">
+                    <button class="btn btn-sm btn-warning" onclick="editItem('mesa', 2)"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteItem('mesa', 2)"><i class="fas fa-trash"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td>Mesa 3</td>
+                  <td>4 personas</td>
+                  <td><span class="badge badge-status badge-reservada">Reservada</span></td>
+                  <td class="action-buttons">
+                    <button class="btn btn-sm btn-warning" onclick="editItem('mesa', 3)"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteItem('mesa', 3)"><i class="fas fa-trash"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Menú Panel -->
+    <div id="panel-menu" class="content" style="display:none">
+      <div class="content-header">
+        <h1 class="m-0">Gestión del Menú</h1>
+      </div>
+      <div class="content-fluid px-4">
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <select class="form-control" id="categoria-filter">
+              <option value="">Todas las categorías</option>
+              <option value="platos">Platos</option>
+              <option value="postres">Postres</option>
+              <option value="bebidas">Bebidas</option>
+              <option value="a_la_carta">A la Carta</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <input type="text" class="form-control search-box" placeholder="Buscar plato...">
+          </div>
+          <div class="col-md-4 text-right">
+            <button class="btn btn-primary" onclick="openModal('menu')"><i class="fas fa-plus mr-2"></i>Nuevo Plato</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body table-responsive p-0">
+            <table class="table table-hover" id="tabla-menu">
+              <thead>
+                <tr>
+                  <th>Imagen</th>
+                  <th>Nombre</th>
+                  <th>Categoría</th>
+                  <th>Precio</th>
+                  <th>Disponibilidad</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect fill='%23ddd' width='40' height='40'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3E🍽%3C/text%3E%3C/svg%3E" style="border-radius:8px;"></td>
+                  <td>Lomo Saltado</td>
+                  <td>Platos</td>
+                  <td>S/ 35.00</td>
+                  <td><span class="badge badge-success">Disponible</span></td>
+                  <td class="action-buttons">
+                    <button class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect fill='%23ddd' width='40' height='40'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3E🍽%3C/text%3E%3C/svg%3E" style="border-radius:8px;"></td>
+                  <td>Ceviche Clásico</td>
+                  <td>Platos</td>
+                  <td>S/ 32.00</td>
+                  <td><span class="badge badge-success">Disponible</span></td>
+                  <td class="action-buttons">
+                    <button class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect fill='%23ddd' width='40' height='40'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3E🍽%3C/text%3E%3C/svg%3E" style="border-radius:8px;"></td>
+                  <td>Suspiro Limeño</td>
+                  <td>Postres</td>
+                  <td>S/ 12.00</td>
+                  <td><span class="badge badge-success">Disponible</span></td>
+                  <td class="action-buttons">
+                    <button class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inventario Panel -->
+    <div id="panel-inventario" class="content" style="display:none">
+      <div class="content-header">
+        <h1 class="m-0">Gestión de Inventario</h1>
+      </div>
+      <div class="content-fluid px-4">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <input type="text" class="form-control search-box" placeholder="Buscar producto...">
+          </div>
+          <div class="col-md-6 text-right">
+            <button class="btn btn-primary" onclick="openModal('inventario')"><i class="fas fa-plus mr-2"></i>Nuevo Producto</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body table-responsive p-0">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Categoría</th>
+                  <th>Cantidad</th>
+                  <th>Unidad</th>
+                  <th>Stock Mínimo</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Pollo</td>
+                  <td>Carnes</td>
+                  <td>25</td>
+                  <td>kg</td>
+                  <td>10</td>
+                  <td><span class="badge badge-success">OK</span></td>
+                  <td class="action-buttons">
+                    <button class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Papas</td>
+                  <td>Verduras</td>
+                  <td>8</td>
+                  <td>kg</td>
+                  <td>15</td>
+                  <td><span class="badge badge-warning">Bajo</span></td>
+                  <td class="action-buttons">
+                    <button class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personal Panel -->
+    <div id="panel-personal" class="content" style="display:none">
+      <div class="content-header">
+        <h1 class="m-0">Gestión de Personal</h1>
+      </div>
+      <div class="content-fluid px-4">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <input type="text" class="form-control search-box" placeholder="Buscar empleado...">
+          </div>
+          <div class="col-md-6 text-right">
+            <button class="btn btn-primary" onclick="openModal('personal')"><i class="fas fa-plus mr-2"></i>Nuevo Empleado</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body table-responsive p-0">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Email</th>
+                  <th>Teléfono</th>
+                  <th>Rol</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><div class="user-avatar d-inline-block mr-2">J</div>Juan Pérez</td>
+                  <td>juan@restaurante.com</td>
+                  <td>987654321</td>
+                  <td><span class="badge badge-primary">Mesero</span></td>
+                  <td><span class="badge badge-success">Activo</span></td>
+                  <td class="action-buttons">
+                    <button class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><div class="user-avatar d-inline-block mr-2">M</div>María García</td>
+                  <td>maria@restaurante.com</td>
+                  <td>987654322</td>
+                  <td><span class="badge badge-info">Cocinero</span></td>
+                  <td><span class="badge badge-success">Activo</span></td>
+                  <td class="action-buttons">
+                    <button class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pedidos Panel -->
+    <div id="panel-pedidos" class="content" style="display:none">
+      <div class="content-header">
+        <h1 class="m-0">Gestión de Pedidos</h1>
+      </div>
+      <div class="content-fluid px-4">
+        <div class="row mb-3">
+          <div class="col-md-3">
+            <select class="form-control">
+              <option>Todos los estados</option>
+              <option>Pendiente</option>
+              <option>Preparando</option>
+              <option>Listo</option>
+              <option>Entregado</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <input type="date" class="form-control">
+          </div>
+          <div class="col-md-3">
+            <input type="text" class="form-control search-box" placeholder="Buscar pedido...">
+          </div>
+          <div class="col-md-3 text-right">
+            <button class="btn btn-success"><i class="fas fa-plus mr-2"></i>Nuevo Pedido</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body table-responsive p-0">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Mesa</th>
+                  <th>Mesero</th>
+                  <th>Items</th>
+                  <th>Total</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>#001</td>
+                  <td>Mesa 5</td>
+                  <td>Juan Pérez</td>
+                  <td>3 items</td>
+                  <td>S/ 85.00</td>
+                  <td><span class="badge badge-success">Entregado</span></td>
+                  <td class="action-buttons">
+                    <button class="btn btn-sm btn-info"><i class="fas fa-eye"></i></button>
+                    <button class="btn btn-sm btn-warning"><i class="fas fa-print"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>#002</td>
+                  <td>Mesa 2</td>
+                  <td>Juan Pérez</td>
+                  <td>5 items</td>
+                  <td>S/ 120.00</td>
+                  <td><span class="badge badge-warning">Preparando</span></td>
+                  <td class="action-buttons">
+                    <button class="btn btn-sm btn-info"><i class="fas fa-eye"></i></button>
+                    <button class="btn btn-sm btn-warning"><i class="fas fa-print"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reportes Panel -->
+    <div id="panel-reportes" class="content" style="display:none">
+      <div class="content-header">
+        <h1 class="m-0">Reportes y Analytics</h1>
+      </div>
+      <div class="content-fluid px-4">
+        <div class="row mb-3">
+          <div class="col-md-12">
+            <div class="btn-group">
+              <button class="btn btn-outline-primary active">Hoy</button>
+              <button class="btn btn-outline-primary">Esta Semana</button>
+              <button class="btn btn-outline-primary">Este Mes</button>
+              <button class="btn btn-outline-primary">Personalizado</button>
+            </div>
+            <button class="btn btn-success float-right"><i class="fas fa-file-export mr-2"></i>Exportar CSV</button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-8">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Ventas por Día</h3>
+              </div>
+              <div class="card-body">
+                <div style="height: 250px; display: flex; align-items: flex-end; justify-content: space-around; padding: 20px;">
+                  <div style="height: 60%; width: 40px; background: #8B2635; border-radius: 4px 4px 0 0;"></div>
+                  <div style="height: 80%; width: 40px; background: #8B2635; border-radius: 4px 4px 0 0;"></div>
+                  <div style="height: 45%; width: 40px; background: #8B2635; border-radius: 4px 4px 0 0;"></div>
+                  <div style="height: 90%; width: 40px; background: #8B2635; border-radius: 4px 4px 0 0;"></div>
+                  <div style="height: 70%; width: 40px; background: #8B2635; border-radius: 4px 4px 0 0;"></div>
+                  <div style="height: 55%; width: 40px; background: #8B2635; border-radius: 4px 4px 0 0;"></div>
+                  <div style="height: 85%; width: 40px; background: #8B2635; border-radius: 4px 4px 0 0;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-around; padding: 0 20px;">
+                  <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Top Platos</h3>
+              </div>
+              <div class="card-body">
+                <div class="d-flex justify-content-between mb-2"><span>Lomo Saltado</span><span class="font-weight-bold">145</span></div>
+                <div class="progress mb-3"><div class="progress-bar" style="width: 90%"></div></div>
+                <div class="d-flex justify-content-between mb-2"><span>Ceviche</span><span class="font-weight-bold">120</span></div>
+                <div class="progress mb-3"><div class="progress-bar" style="width: 75%"></div></div>
+                <div class="d-flex justify-content-between mb-2"><span>Arroz con Pollo</span><span class="font-weight-bold">98</span></div>
+                <div class="progress mb-3"><div class="progress-bar" style="width: 60%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reservas Panel -->
+    <div id="panel-reservas" class="content" style="display:none">
+      <div class="content-header">
+        <h1 class="m-0">Gestión de Reservas</h1>
+      </div>
+      <div class="content-fluid px-4">
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <input type="date" class="form-control" id="reserva-fecha">
+          </div>
+          <div class="col-md-4">
+            <input type="text" class="form-control search-box" placeholder="Buscar reserva...">
+          </div>
+          <div class="col-md-4 text-right">
+            <button class="btn btn-primary" onclick="openModal('reserva')"><i class="fas fa-plus mr-2"></i>Nueva Reserva</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body table-responsive p-0">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th>Teléfono</th>
+                  <th>Fecha</th>
+                  <th>Hora</th>
+                  <th>Mesa</th>
+                  <th>Personas</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Carlos López</td>
+                  <td>987654333</td>
+                  <td>25/05/2026</td>
+                  <td>19:00</td>
+                  <td>Mesa 4</td>
+                  <td>4</td>
+                  <td><span class="badge badge-success">Confirmada</span></td>
+                  <td class="action-buttons">
+                    <button class="btn btn-sm btn-info"><i class="fab fa-whatsapp"></i></button>
+                    <button class="btn btn-sm btn-danger"><i class="fas fa-times"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Ana Torres</td>
+                  <td>987654444</td>
+                  <td>25/05/2026</td>
+                  <td>20:30</td>
+                  <td>Mesa 6</td>
+                  <td>2</td>
+                  <td><span class="badge badge-warning">Pendiente</span></td>
+                  <td class="action-buttons">
+                    <button class="btn btn-sm btn-info"><i class="fab fa-whatsapp"></i></button>
+                    <button class="btn btn-sm btn-danger"><i class="fas fa-times"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="main-footer">
+    <strong>RestaurantPOS &copy; 2026</strong> Todos los derechos reservados.
+    <div class="float-right d-none d-sm-inline-block">
+      <b>Versión</b> 1.0.0
+    </div>
+  </footer>
+</div>
+
+<!-- Modal Genérico -->
+<div class="modal" id="genericModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" style="background: var(--primary); color: white;">
+        <h5 class="modal-title" id="modalTitle">Nuevo</h5>
+        <button type="button" class="close" data-dismiss="modal" style="color: white;">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- Contenido dinámico -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="saveItem()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/js/adminlte.min.js"></script>
+
+<script>
+let currentSection = 'dashboard';
+let editId = null;
+
+function showPanel(panel) {
+  document.querySelectorAll('.content').forEach(p => p.style.display = 'none');
+  document.getElementById('panel-' + panel).style.display = 'block';
+  currentSection = panel;
+  
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.querySelector(`[onclick="showPanel('${panel}')"]`).classList.add('active');
+}
+
+function openModal(type) {
+  const modal = document.getElementById('genericModal');
+  const title = document.getElementById('modalTitle');
+  const body = document.getElementById('modalBody');
+  
+  let content = '';
+  
+  switch(type) {
+    case 'mesa':
+      title.textContent = editId ? 'Editar Mesa' : 'Nueva Mesa';
+      content = `
+        <div class="form-group">
+          <label>Número de Mesa</label>
+          <input type="number" class="form-control" id="mesa-numero" value="${editId || ''}" placeholder="Ej: 5">
+        </div>
+        <div class="form-group">
+          <label>Capacidad (personas)</label>
+          <input type="number" class="form-control" id="mesa-capacidad" placeholder="Ej: 4">
+        </div>
+        <div class="form-group">
+          <label>Estado</label>
+          <select class="form-control" id="mesa-estado">
+            <option value="libre">Libre</option>
+            <option value="ocupada">Ocupada</option>
+            <option value="reservada">Reservada</option>
+          </select>
+        </div>
+      `;
+      break;
+    case 'menu':
+      title.textContent = editId ? 'Editar Plato' : 'Nuevo Plato';
+      content = `
+        <div class="form-group">
+          <label>Nombre</label>
+          <input type="text" class="form-control" id="menu-nombre" placeholder="Ej: Lomo Saltado">
+        </div>
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea class="form-control" id="menu-descripcion" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Categoría</label>
+          <select class="form-control" id="menu-categoria">
+            <option value="platos">Platos</option>
+            <option value="postres">Postres</option>
+            <option value="bebidas">Bebidas</option>
+            <option value="a_la_carta">A la Carta</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Precio (S/)</label>
+          <input type="number" class="form-control" id="menu-precio" step="0.01">
+        </div>
+        <div class="form-group">
+          <label>Imagen</label>
+          <input type="file" class="form-control" accept="image/*">
+        </div>
+      `;
+      break;
+    case 'inventario':
+      title.textContent = editId ? 'Editar Producto' : 'Nuevo Producto';
+      content = `
+        <div class="form-group">
+          <label>Nombre del Producto</label>
+          <input type="text" class="form-control" id="inv-nombre">
+        </div>
+        <div class="form-group">
+          <label>Categoría</label>
+          <select class="form-control" id="inv-categoria">
+            <option value="carnes">Carnes</option>
+            <option value="verduras">Verduras</option>
+            <option value="bebidas">Bebidas</option>
+            <option value="basicos">Básicos</option>
+          </select>
+        </div>
+        <div class="row">
+          <div class="col-6">
+            <div class="form-group">
+              <label>Cantidad</label>
+              <input type="number" class="form-control" id="inv-cantidad">
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group">
+              <label>Unidad</label>
+              <select class="form-control" id="inv-unidad">
+                <option value="kg">kg</option>
+                <option value="L">L</option>
+                <option value="und">und</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Stock Mínimo</label>
+          <input type="number" class="form-control" id="inv-minimo">
+        </div>
+      `;
+      break;
+    case 'personal':
+      title.textContent = editId ? 'Editar Empleado' : 'Nuevo Empleado';
+      content = `
+        <div class="form-group">
+          <label>Nombre Completo</label>
+          <input type="text" class="form-control" id="emp-nombre">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" class="form-control" id="emp-email">
+        </div>
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="tel" class="form-control" id="emp-telefono">
+        </div>
+        <div class="form-group">
+          <label>Rol</label>
+          <select class="form-control" id="emp-rol">
+            <option value="admin">Administrador</option>
+            <option value="mesero">Mesero</option>
+            <option value="cocinero">Cocinero</option>
+            <option value="caja">Caja</option>
+          </select>
+        </div>
+      `;
+      break;
+    case 'reserva':
+      title.textContent = 'Nueva Reserva';
+      content = `
+        <div class="form-group">
+          <label>Nombre del Cliente</label>
+          <input type="text" class="form-control" id="res-nombre">
+        </div>
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="tel" class="form-control" id="res-telefono">
+        </div>
+        <div class="row">
+          <div class="col-6">
+            <div class="form-group">
+              <label>Fecha</label>
+              <input type="date" class="form-control" id="res-fecha">
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group">
+              <label>Hora</label>
+              <input type="time" class="form-control" id="res-hora">
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-6">
+            <div class="form-group">
+              <label>Mesa</label>
+              <select class="form-control" id="res-mesa">
+                <option value="1">Mesa 1</option>
+                <option value="2">Mesa 2</option>
+                <option value="3">Mesa 3</option>
+                <option value="4">Mesa 4</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group">
+              <label>Personas</label>
+              <input type="number" class="form-control" id="res-personas" min="1" max="20">
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notas</label>
+          <textarea class="form-control" id="res-notas" rows="2"></textarea>
+        </div>
+      `;
+      break;
+  }
+  
+  body.innerHTML = content;
+  $(modal).modal('show');
+  editId = null;
+}
+
+function editItem(type, id) {
+  editId = id;
+  openModal(type);
+}
+
+function deleteItem(type, id) {
+  if(confirm('¿Está seguro de eliminar este elemento?')) {
+    alert(`Elemento ${id} eliminado de ${type}`);
+  }
+}
+
+function saveItem() {
+  alert('Datos guardados correctamente');
+  $('#genericModal').modal('hide');
+}
+
+// Set today's date for reservations
+document.getElementById('reserva-fecha')?.setAttribute('value', new Date().toISOString().split('T')[0]);
+</script>
+
+</body>
+</html>
